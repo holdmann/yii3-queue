@@ -13,16 +13,21 @@ final class PushMiddlewareDispatcher
      *
      * @var MiddlewarePushStack|null The middleware stack.
      */
-    private ?MiddlewarePushStack $stack = null;
+    private $stack;
     /**
      * @var array[]|callable[]|MiddlewarePushInterface[]|string[]
      */
-    private array $middlewareDefinitions;
-
-    public function __construct(
-        private MiddlewareFactoryPushInterface $middlewareFactory,
-        array|callable|string|MiddlewarePushInterface ...$middlewareDefinitions,
-    ) {
+    private $middlewareDefinitions;
+    /**
+     * @var \Yiisoft\Queue\Middleware\Push\MiddlewareFactoryPushInterface
+     */
+    private $middlewareFactory;
+    /**
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
+    public function __construct(MiddlewareFactoryPushInterface $middlewareFactory, ...$middlewareDefinitions)
+    {
+        $this->middlewareFactory = $middlewareFactory;
         $this->middlewareDefinitions = array_reverse($middlewareDefinitions);
     }
 
@@ -89,9 +94,11 @@ final class PushMiddlewareDispatcher
         $factory = $this->middlewareFactory;
 
         foreach ($this->middlewareDefinitions as $middlewareDefinition) {
-            $middlewares[] = static fn (): MiddlewarePushInterface => $factory->createPushMiddleware(
-                $middlewareDefinition
-            );
+            $middlewares[] = static function () use ($factory, $middlewareDefinition) : MiddlewarePushInterface {
+                return $factory->createPushMiddleware(
+                    $middlewareDefinition
+                );
+            };
         }
 
         return $middlewares;

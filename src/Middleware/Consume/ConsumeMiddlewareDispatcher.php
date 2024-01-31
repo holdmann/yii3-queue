@@ -13,17 +13,22 @@ final class ConsumeMiddlewareDispatcher
      *
      * @var MiddlewareConsumeStack|null The middleware stack.
      */
-    private ?MiddlewareConsumeStack $stack = null;
+    private $stack;
 
     /**
      * @var array[]|callable[]|MiddlewareConsumeInterface[]|string[]
      */
-    private array $middlewareDefinitions;
-
-    public function __construct(
-        private MiddlewareFactoryConsumeInterface $middlewareFactory,
-        array|callable|string|MiddlewareConsumeInterface ...$middlewareDefinitions,
-    ) {
+    private $middlewareDefinitions;
+    /**
+     * @var \Yiisoft\Queue\Middleware\Consume\MiddlewareFactoryConsumeInterface
+     */
+    private $middlewareFactory;
+    /**
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\Consume\MiddlewareConsumeInterface ...$middlewareDefinitions
+     */
+    public function __construct(MiddlewareFactoryConsumeInterface $middlewareFactory, ...$middlewareDefinitions)
+    {
+        $this->middlewareFactory = $middlewareFactory;
         $this->middlewareDefinitions = array_reverse($middlewareDefinitions);
     }
 
@@ -90,9 +95,11 @@ final class ConsumeMiddlewareDispatcher
         $factory = $this->middlewareFactory;
 
         foreach ($this->middlewareDefinitions as $middlewareDefinition) {
-            $middlewares[] = static fn (): MiddlewareConsumeInterface => $factory->createConsumeMiddleware(
-                $middlewareDefinition
-            );
+            $middlewares[] = static function () use ($factory, $middlewareDefinition) : MiddlewareConsumeInterface {
+                return $factory->createConsumeMiddleware(
+                    $middlewareDefinition
+                );
+            };
         }
 
         return $middlewares;

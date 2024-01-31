@@ -110,7 +110,9 @@ final class MiddlewareTest extends TestCase
         );
 
         $worker = new Worker(
-            ['test' => static fn () => true],
+            ['test' => static function () {
+                return true;
+            }],
             new SimpleLogger(),
             new Injector($container),
             $container,
@@ -130,7 +132,9 @@ final class MiddlewareTest extends TestCase
         $this->expectExceptionObject($exception);
 
         $message = new Message('simple', null, []);
-        $queueCallback = static fn (MessageInterface $message): MessageInterface => $message;
+        $queueCallback = static function (MessageInterface $message) : MessageInterface {
+            return $message;
+        };
         $queue = $this->createMock(QueueInterface::class);
         $container = new SimpleContainer([SendAgainMiddleware::class => new SendAgainMiddleware('test-container', 1, $queue)]);
         $callableFactory = new CallableFactory($container);
@@ -149,7 +153,9 @@ final class MiddlewareTest extends TestCase
                     new SendAgainMiddleware('test-callable', 1, $queue),
                     'processFailure',
                 ],
-                fn (): SendAgainMiddleware => new SendAgainMiddleware('test-callable-2', 1, $queue),
+                function () use ($queue) : SendAgainMiddleware {
+                    return new SendAgainMiddleware('test-callable-2', 1, $queue);
+                },
                 SendAgainMiddleware::class,
                 new ExponentialDelayMiddleware(
                     'test',

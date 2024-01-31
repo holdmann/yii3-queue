@@ -27,9 +27,11 @@ final class MiddlewareDispatcherTest extends TestCase
 
         $dispatcher = $this->createDispatcher()->withMiddlewares(
             [
-                static fn (PushRequest $request, AdapterInterface $adapter): PushRequest => $request
-                    ->withMessage(new Message('test', 'New closure test data'))
-                    ->withAdapter($adapter->withChannel('closure-channel')),
+                static function (PushRequest $request, AdapterInterface $adapter) : PushRequest {
+                    return $request
+                        ->withMessage(new Message('test', 'New closure test data'))
+                        ->withAdapter($adapter->withChannel('closure-channel'));
+                },
             ]
         );
 
@@ -103,8 +105,12 @@ final class MiddlewareDispatcherTest extends TestCase
     {
         $request = $this->getPushRequest();
 
-        $middleware1 = static fn (PushRequest $request, MessageHandlerPushInterface $handler): PushRequest => $request->withMessage(new Message($request->getMessage()->getHandlerName(), 'first'));
-        $middleware2 = static fn (PushRequest $request, MessageHandlerPushInterface $handler): PushRequest => $request->withMessage(new Message($request->getMessage()->getHandlerName(), 'second'));
+        $middleware1 = static function (PushRequest $request, MessageHandlerPushInterface $handler) : PushRequest {
+            return $request->withMessage(new Message($request->getMessage()->getHandlerName(), 'first'));
+        };
+        $middleware2 = static function (PushRequest $request, MessageHandlerPushInterface $handler) : PushRequest {
+            return $request->withMessage(new Message($request->getMessage()->getHandlerName(), 'second'));
+        };
 
         $dispatcher = $this->createDispatcher()->withMiddlewares([$middleware1, $middleware2]);
 
@@ -120,7 +126,6 @@ final class MiddlewareDispatcherTest extends TestCase
         ];
     }
 
-    #[DataProvider('dataHasMiddlewares')]
     public function testHasMiddlewares(array $definitions, bool $expected): void
     {
         self::assertSame(
@@ -166,12 +171,10 @@ final class MiddlewareDispatcherTest extends TestCase
         };
     }
 
-    private function createDispatcher(
-        ContainerInterface $container = null,
-    ): PushMiddlewareDispatcher {
-        $container ??= $this->createContainer([AdapterInterface::class => new FakeAdapter()]);
+    private function createDispatcher(ContainerInterface $container = null): PushMiddlewareDispatcher
+    {
+        $container = $container ?? $this->createContainer([AdapterInterface::class => new FakeAdapter()]);
         $callableFactory = new CallableFactory($container);
-
         return new PushMiddlewareDispatcher(
             new MiddlewareFactoryPush($container, $callableFactory),
         );

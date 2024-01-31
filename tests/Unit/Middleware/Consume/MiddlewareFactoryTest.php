@@ -58,10 +58,12 @@ final class MiddlewareFactoryTest extends TestCase
     {
         $container = $this->getContainer([TestCallableMiddleware::class => new TestCallableMiddleware()]);
         $middleware = $this->getMiddlewareFactory($container)->createConsumeMiddleware(
-            fn (): ConsumeRequest => new ConsumeRequest(
-                new Message('test', 'test data'),
-                $this->createMock(QueueInterface::class),
-            )
+            function () : ConsumeRequest {
+                return new ConsumeRequest(
+                    new Message('test', 'test data'),
+                    $this->createMock(QueueInterface::class),
+                );
+            }
         );
         self::assertSame(
             'test data',
@@ -76,7 +78,9 @@ final class MiddlewareFactoryTest extends TestCase
     {
         $container = $this->getContainer([TestCallableMiddleware::class => new TestCallableMiddleware()]);
         $middleware = $this->getMiddlewareFactory($container)->createConsumeMiddleware(
-            static fn (): MiddlewareConsumeInterface => new TestMiddleware()
+            static function () : MiddlewareConsumeInterface {
+                return new TestMiddleware();
+            }
         );
         self::assertSame(
             'New middleware test data',
@@ -122,7 +126,9 @@ final class MiddlewareFactoryTest extends TestCase
     {
         $container = $this->getContainer([TestCallableMiddleware::class => new TestCallableMiddleware()]);
         $middleware = $this->getMiddlewareFactory($container)->createConsumeMiddleware(
-            static fn () => 42
+            static function () {
+                return 42;
+            }
         );
 
         $this->expectException(InvalidMiddlewareDefinitionException::class);
@@ -146,8 +152,10 @@ final class MiddlewareFactoryTest extends TestCase
         ];
     }
 
-    #[DataProvider('invalidMiddlewareDefinitionProvider')]
-    public function testInvalidMiddleware(mixed $definition): void
+    /**
+     * @param mixed $definition
+     */
+    public function testInvalidMiddleware($definition): void
     {
         $this->expectException(InvalidMiddlewareDefinitionException::class);
         $this->getMiddlewareFactory()->createConsumeMiddleware($definition);
@@ -169,7 +177,7 @@ final class MiddlewareFactoryTest extends TestCase
 
     private function getMiddlewareFactory(ContainerInterface $container = null): MiddlewareFactoryConsumeInterface
     {
-        $container ??= $this->getContainer([AdapterInterface::class => new FakeAdapter()]);
+        $container = $container ?? $this->getContainer([AdapterInterface::class => new FakeAdapter()]);
 
         return new MiddlewareFactoryConsume($container, new CallableFactory($container));
     }

@@ -34,10 +34,6 @@ final class InvalidMiddlewareDefinitionExceptionTest extends TestCase
         ];
     }
 
-    #[DataProvider('dataBase')]
-    /**
-     * @param mixed $definition
-     */
     public function testBase($definition, string $expected): void
     {
         $exception = new InvalidMiddlewareDefinitionException($definition);
@@ -52,10 +48,6 @@ final class InvalidMiddlewareDefinitionExceptionTest extends TestCase
         ];
     }
 
-    #[DataProvider('dataUnknownDefinition')]
-    /**
-     * @param mixed $definition
-     */
     public function testUnknownDefinition($definition): void
     {
         $exception = new InvalidMiddlewareDefinitionException($definition);

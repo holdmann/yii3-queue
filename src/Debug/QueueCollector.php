@@ -15,9 +15,18 @@ final class QueueCollector implements SummaryCollectorInterface
 {
     use CollectorTrait;
 
-    private array $pushes = [];
-    private array $statuses = [];
-    private array $processingMessages = [];
+    /**
+     * @var mixed[]
+     */
+    private $pushes = [];
+    /**
+     * @var mixed[]
+     */
+    private $statuses = [];
+    /**
+     * @var mixed[]
+     */
+    private $processingMessages = [];
 
     public function getCollected(): array
     {
@@ -38,23 +47,31 @@ final class QueueCollector implements SummaryCollectorInterface
             return;
         }
 
-        $statusText = match (true) {
-            $status->isDone() => 'done',
-            $status->isReserved() => 'reserved',
-            $status->isWaiting() => 'waiting',
-            default => 'unknown'
-        };
+        switch (true) {
+            case $status->isDone():
+                $statusText = 'done';
+                break;
+            case $status->isReserved():
+                $statusText = 'reserved';
+                break;
+            case $status->isWaiting():
+                $statusText = 'waiting';
+                break;
+            default:
+                $statusText = 'unknown';
+                break;
+        }
         $this->statuses[] = [
             'id' => $id,
             'status' => $statusText,
         ];
     }
 
-    public function collectPush(
-        string $channel,
-        MessageInterface $message,
-        string|array|callable|MiddlewarePushInterface ...$middlewareDefinitions,
-    ): void {
+    /**
+     * @param string|mixed[]|callable|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
+    public function collectPush(string $channel, MessageInterface $message, ...$middlewareDefinitions): void
+    {
         if (!$this->isActive()) {
             return;
         }
@@ -85,9 +102,13 @@ final class QueueCollector implements SummaryCollectorInterface
             return [];
         }
 
-        $countPushes = array_sum(array_map(fn ($messages) => is_countable($messages) ? count($messages) : 0, $this->pushes));
+        $countPushes = array_sum(array_map(function ($messages) {
+            return is_countable($messages) ? count($messages) : 0;
+        }, $this->pushes));
         $countStatuses = count($this->statuses);
-        $countProcessingMessages = array_sum(array_map(fn ($messages) => is_countable($messages) ? count($messages) : 0, $this->processingMessages));
+        $countProcessingMessages = array_sum(array_map(function ($messages) {
+            return is_countable($messages) ? count($messages) : 0;
+        }, $this->processingMessages));
 
         return [
             'queue' => [
