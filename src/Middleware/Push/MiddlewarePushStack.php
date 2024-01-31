@@ -14,17 +14,24 @@ final class MiddlewarePushStack implements MessageHandlerPushInterface
      *
      * @var MessageHandlerPushInterface|null stack of middleware
      */
-    private ?MessageHandlerPushInterface $stack = null;
-
+    private $stack;
+    /**
+     * @var Closure[]
+     */
+    private $middlewares;
+    /**
+     * @var MessageHandlerPushInterface
+     */
+    private $finishHandler;
     /**
      * @param Closure[] $middlewares Middlewares.
      * @param MessageHandlerPushInterface $finishHandler Fallback handler
      * events.
      */
-    public function __construct(
-        private array $middlewares,
-        private MessageHandlerPushInterface $finishHandler,
-    ) {
+    public function __construct(array $middlewares, MessageHandlerPushInterface $finishHandler)
+    {
+        $this->middlewares = $middlewares;
+        $this->finishHandler = $finishHandler;
     }
 
     public function handlePush(PushRequest $request): PushRequest
@@ -54,12 +61,22 @@ final class MiddlewarePushStack implements MessageHandlerPushInterface
     private function wrap(Closure $middlewareFactory, MessageHandlerPushInterface $handler): MessageHandlerPushInterface
     {
         return new class ($middlewareFactory, $handler) implements MessageHandlerPushInterface {
-            private ?MiddlewarePushInterface $middleware = null;
-
-            public function __construct(
-                private Closure $middlewareFactory,
-                private MessageHandlerPushInterface $handler,
-            ) {
+            /**
+             * @var \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|null
+             */
+            private $middleware;
+            /**
+             * @var \Closure
+             */
+            private $middlewareFactory;
+            /**
+             * @var \Yiisoft\Queue\Middleware\Push\MessageHandlerPushInterface
+             */
+            private $handler;
+            public function __construct(Closure $middlewareFactory, MessageHandlerPushInterface $handler)
+            {
+                $this->middlewareFactory = $middlewareFactory;
+                $this->handler = $handler;
             }
 
             public function handlePush(PushRequest $request): PushRequest

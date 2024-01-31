@@ -14,14 +14,31 @@ use Yiisoft\Queue\Message\IdEnvelope;
 
 final class SynchronousAdapter implements AdapterInterface
 {
-    private array $messages = [];
-    private int $current = 0;
-
-    public function __construct(
-        private WorkerInterface $worker,
-        private QueueInterface $queue,
-        private string $channel = QueueFactory::DEFAULT_CHANNEL_NAME,
-    ) {
+    /**
+     * @var mixed[]
+     */
+    private $messages = [];
+    /**
+     * @var int
+     */
+    private $current = 0;
+    /**
+     * @var \Yiisoft\Queue\Worker\WorkerInterface
+     */
+    private $worker;
+    /**
+     * @var \Yiisoft\Queue\QueueInterface
+     */
+    private $queue;
+    /**
+     * @var string
+     */
+    private $channel = QueueFactory::DEFAULT_CHANNEL_NAME;
+    public function __construct(WorkerInterface $worker, QueueInterface $queue, string $channel = QueueFactory::DEFAULT_CHANNEL_NAME)
+    {
+        $this->worker = $worker;
+        $this->queue = $queue;
+        $this->channel = $channel;
     }
 
     public function __destruct()
@@ -43,7 +60,10 @@ final class SynchronousAdapter implements AdapterInterface
         }
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         $id = (int) $id;
 
@@ -75,7 +95,10 @@ final class SynchronousAdapter implements AdapterInterface
         $this->runExisting($handlerCallback);
     }
 
-    public function withChannel(string $channel): self
+    /**
+     * @return $this
+     */
+    public function withChannel(string $channel): \Yiisoft\Queue\Adapter\AdapterInterface
     {
         if ($channel === $this->channel) {
             return $this;

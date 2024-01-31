@@ -9,12 +9,19 @@ use Yiisoft\Queue\QueueInterface;
 
 final class QueueFactoryInterfaceProxy implements QueueFactoryInterface
 {
-    public function __construct(
-        private QueueFactoryInterface $queueFactory,
-        private QueueCollector $collector,
-    ) {
+    /**
+     * @var \Yiisoft\Queue\QueueFactoryInterface
+     */
+    private $queueFactory;
+    /**
+     * @var \Yiisoft\Queue\Debug\QueueCollector
+     */
+    private $collector;
+    public function __construct(QueueFactoryInterface $queueFactory, QueueCollector $collector)
+    {
+        $this->queueFactory = $queueFactory;
+        $this->collector = $collector;
     }
-
     public function get(string $channel = self::DEFAULT_CHANNEL_NAME): QueueInterface
     {
         $queue = $this->queueFactory->get($channel);

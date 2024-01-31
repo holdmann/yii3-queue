@@ -13,13 +13,21 @@ use Yiisoft\Queue\QueueInterface;
 
 final class DummyQueue implements QueueInterface
 {
-    public function __construct(private string $channelName)
+    /**
+     * @var string
+     */
+    private $channelName;
+    public function __construct(string $channelName)
     {
+        $this->channelName = $channelName;
     }
 
+    /**
+     * @param string|mixed[]|callable|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
     public function push(
         MessageInterface $message,
-        string|array|callable|MiddlewarePushInterface ...$middlewareDefinitions
+        ...$middlewareDefinitions
     ): MessageInterface {
         return $message;
     }
@@ -33,7 +41,10 @@ final class DummyQueue implements QueueInterface
     {
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         throw new Exception('`status()` method is not implemented yet.');
     }

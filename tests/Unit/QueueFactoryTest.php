@@ -82,7 +82,7 @@ class QueueFactoryTest extends TestCase
 
             $factory->get('test');
         } catch (ChannelNotConfiguredException $exception) {
-            self::assertSame($exception::class, ChannelNotConfiguredException::class);
+            self::assertSame(get_class($exception), ChannelNotConfiguredException::class);
             self::assertSame($exception->getName(), 'Queue channel is not properly configured');
             $this->assertMatchesRegularExpression('/"test"/', $exception->getSolution());
         }
@@ -103,7 +103,7 @@ class QueueFactoryTest extends TestCase
 
             $factory->get('test');
         } catch (ChannelIncorrectlyConfigured $exception) {
-            self::assertSame($exception::class, ChannelIncorrectlyConfigured::class);
+            self::assertSame(get_class($exception), ChannelIncorrectlyConfigured::class);
             self::assertSame($exception->getName(), 'Incorrect queue channel configuration');
             $this->assertMatchesRegularExpression('/"test"/', $exception->getSolution());
         }

@@ -14,17 +14,24 @@ final class MiddlewareFailureStack implements MessageFailureHandlerInterface
      *
      * @var MessageFailureHandlerInterface|null stack of middleware
      */
-    private ?MessageFailureHandlerInterface $stack = null;
-
+    private $stack;
+    /**
+     * @var Closure[]
+     */
+    private $middlewares;
+    /**
+     * @var MessageFailureHandlerInterface
+     */
+    private $finishHandler;
     /**
      * @param Closure[] $middlewares Middlewares.
      * @param MessageFailureHandlerInterface $finishHandler Fallback handler
      * events.
      */
-    public function __construct(
-        private array $middlewares,
-        private MessageFailureHandlerInterface $finishHandler,
-    ) {
+    public function __construct(array $middlewares, MessageFailureHandlerInterface $finishHandler)
+    {
+        $this->middlewares = $middlewares;
+        $this->finishHandler = $finishHandler;
     }
 
     public function handleFailure(FailureHandlingRequest $request): FailureHandlingRequest
@@ -54,12 +61,22 @@ final class MiddlewareFailureStack implements MessageFailureHandlerInterface
     private function wrap(Closure $middlewareFactory, MessageFailureHandlerInterface $handler): MessageFailureHandlerInterface
     {
         return new class ($middlewareFactory, $handler) implements MessageFailureHandlerInterface {
-            private ?MiddlewareFailureInterface $middleware = null;
-
-            public function __construct(
-                private Closure $middlewareFactory,
-                private MessageFailureHandlerInterface $handler,
-            ) {
+            /**
+             * @var \Yiisoft\Queue\Middleware\FailureHandling\MiddlewareFailureInterface|null
+             */
+            private $middleware;
+            /**
+             * @var \Closure
+             */
+            private $middlewareFactory;
+            /**
+             * @var \Yiisoft\Queue\Middleware\FailureHandling\MessageFailureHandlerInterface
+             */
+            private $handler;
+            public function __construct(Closure $middlewareFactory, MessageFailureHandlerInterface $handler)
+            {
+                $this->middlewareFactory = $middlewareFactory;
+                $this->handler = $handler;
             }
 
             public function handleFailure(FailureHandlingRequest $request): FailureHandlingRequest

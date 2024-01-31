@@ -12,13 +12,23 @@ use Yiisoft\Queue\QueueInterface;
 
 final class QueueDecorator implements QueueInterface
 {
-    public function __construct(
-        private QueueInterface $queue,
-        private QueueCollector $collector,
-    ) {
+    /**
+     * @var \Yiisoft\Queue\QueueInterface
+     */
+    private $queue;
+    /**
+     * @var \Yiisoft\Queue\Debug\QueueCollector
+     */
+    private $collector;
+    public function __construct(QueueInterface $queue, QueueCollector $collector)
+    {
+        $this->queue = $queue;
+        $this->collector = $collector;
     }
-
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         $result = $this->queue->status($id);
         $this->collector->collectStatus($id, $result);
@@ -26,9 +36,12 @@ final class QueueDecorator implements QueueInterface
         return $result;
     }
 
+    /**
+     * @param string|mixed[]|callable|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
     public function push(
         MessageInterface $message,
-        string|array|callable|MiddlewarePushInterface ...$middlewareDefinitions
+        ...$middlewareDefinitions
     ): MessageInterface {
         $message = $this->queue->push($message, ...$middlewareDefinitions);
         $this->collector->collectPush($this->queue->getChannelName(), $message, ...$middlewareDefinitions);

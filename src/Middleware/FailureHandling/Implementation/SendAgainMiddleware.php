@@ -18,7 +18,18 @@ use Yiisoft\Queue\QueueInterface;
 final class SendAgainMiddleware implements MiddlewareFailureInterface
 {
     public const META_KEY_RESEND = 'failure-strategy-resend-attempts';
-
+    /**
+     * @var string
+     */
+    private $id;
+    /**
+     * @var int
+     */
+    private $maxAttempts;
+    /**
+     * @var QueueInterface|null
+     */
+    private $queue;
     /**
      * @param string $id A unique id to differentiate two and more instances of this class
      * @param int $maxAttempts Maximum attempts count for this strategy with the given $id before it will give up

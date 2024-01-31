@@ -15,7 +15,10 @@ class JobStatus
     /** @psalm-suppress MissingClassConstType */
     final public const DONE = 3;
 
-    protected int $status;
+    /**
+     * @var int
+     */
+    protected $status;
 
     final protected function __construct(int $status)
     {

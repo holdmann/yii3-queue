@@ -21,7 +21,34 @@ final class ExponentialDelayMiddleware implements MiddlewareFailureInterface
 {
     public const META_KEY_ATTEMPTS = 'failure-strategy-exponential-delay-attempts';
     public const META_KEY_DELAY = 'failure-strategy-exponential-delay-delay';
-
+    /**
+     * @var string
+     */
+    private $id;
+    /**
+     * @var int
+     */
+    private $maxAttempts;
+    /**
+     * @var float
+     */
+    private $delayInitial;
+    /**
+     * @var float
+     */
+    private $delayMaximum;
+    /**
+     * @var float
+     */
+    private $exponent;
+    /**
+     * @var \Yiisoft\Queue\Middleware\Push\Implementation\DelayMiddlewareInterface
+     */
+    private $delayMiddleware;
+    /**
+     * @var QueueInterface|null
+     */
+    private $queue;
     /**
      * @param string $id A unique id to differentiate two and more instances of this class
      * @param int $maxAttempts Maximum attempts count for this strategy with the given $id before it will give up
@@ -30,27 +57,24 @@ final class ExponentialDelayMiddleware implements MiddlewareFailureInterface
      * @param float $exponent Message handling delay will be increased by this multiplication each time it fails
      * @param QueueInterface|null $queue
      */
-    public function __construct(
-        private string $id,
-        private int $maxAttempts,
-        private float $delayInitial,
-        private float $delayMaximum,
-        private float $exponent,
-        private DelayMiddlewareInterface $delayMiddleware,
-        private ?QueueInterface $queue = null,
-    ) {
+    public function __construct(string $id, int $maxAttempts, float $delayInitial, float $delayMaximum, float $exponent, DelayMiddlewareInterface $delayMiddleware, ?QueueInterface $queue = null)
+    {
+        $this->id = $id;
+        $this->maxAttempts = $maxAttempts;
+        $this->delayInitial = $delayInitial;
+        $this->delayMaximum = $delayMaximum;
+        $this->exponent = $exponent;
+        $this->delayMiddleware = $delayMiddleware;
+        $this->queue = $queue;
         if ($maxAttempts <= 0) {
             throw new InvalidArgumentException("maxAttempts parameter must be a positive integer, $this->maxAttempts given.");
         }
-
         if ($delayInitial <= 0) {
             throw new InvalidArgumentException("delayInitial parameter must be a positive float, $this->delayInitial given.");
         }
-
         if ($delayMaximum < $delayInitial) {
             throw new InvalidArgumentException("delayMaximum parameter must not be less then delayInitial, , $this->delayMaximum given.");
         }
-
         if ($exponent <= 0) {
             throw new InvalidArgumentException("exponent parameter must not be zero or less, $this->exponent given.");
         }

@@ -12,11 +12,21 @@ final class IdEnvelope implements EnvelopeInterface
     use EnvelopeTrait;
 
     public const MESSAGE_ID_KEY = 'yii-message-id';
-
-    public function __construct(
-        private MessageInterface $message,
-        private string|int|null $id = null,
-    ) {
+    /**
+     * @var \Yiisoft\Queue\Message\MessageInterface
+     */
+    private $message;
+    /**
+     * @var string|int|null
+     */
+    private $id = null;
+    /**
+     * @param string|int|null $id
+     */
+    public function __construct(MessageInterface $message, $id = null)
+    {
+        $this->message = $message;
+        $this->id = $id;
     }
 
     public static function fromMessage(MessageInterface $message): self
@@ -29,7 +39,10 @@ final class IdEnvelope implements EnvelopeInterface
         $this->id = $id;
     }
 
-    public function getId(): string|int|null
+    /**
+     * @return string|int|null
+     */
+    public function getId()
     {
         return $this->id ?? $this->message->getMetadata()[self::MESSAGE_ID_KEY] ?? null;
     }

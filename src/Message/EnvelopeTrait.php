@@ -6,7 +6,10 @@ namespace Yiisoft\Queue\Message;
 
 trait EnvelopeTrait
 {
-    private MessageInterface $message;
+    /**
+     * @var \Yiisoft\Queue\Message\MessageInterface
+     */
+    private $message;
 
     public function getMessage(): MessageInterface
     {
@@ -26,7 +29,10 @@ trait EnvelopeTrait
         return $this->message->getHandlerName();
     }
 
-    public function getData(): mixed
+    /**
+     * @return mixed
+     */
+    public function getData()
     {
         return $this->message->getData();
     }

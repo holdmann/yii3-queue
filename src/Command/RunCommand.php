@@ -16,9 +16,19 @@ final class RunCommand extends Command
     protected static $defaultName = 'queue:run';
     protected static $defaultDescription = 'Runs all the existing messages in the given queues. ' .
         'Exits once messages are over.';
+    /**
+     * @var \Yiisoft\Queue\QueueFactoryInterface
+     */
+    private $queueFactory;
+    /**
+     * @var mixed[]
+     */
+    private $channels;
 
-    public function __construct(private QueueFactoryInterface $queueFactory, private array $channels)
+    public function __construct(QueueFactoryInterface $queueFactory, array $channels)
     {
+        $this->queueFactory = $queueFactory;
+        $this->channels = $channels;
         parent::__construct();
     }
 

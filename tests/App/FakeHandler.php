@@ -9,7 +9,10 @@ use RuntimeException;
 
 final class FakeHandler
 {
-    public static array $processedMessages = [];
+    /**
+     * @var mixed[]
+     */
+    public static $processedMessages = [];
 
     public function __construct()
     {
@@ -31,7 +34,10 @@ final class FakeHandler
         self::$processedMessages[] = $message;
     }
 
-    public function executeWithException(MessageInterface $message): never
+    /**
+     * @return never
+     */
+    public function executeWithException(MessageInterface $message)
     {
         throw new RuntimeException('Test exception');
     }

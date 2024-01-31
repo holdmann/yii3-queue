@@ -22,7 +22,7 @@ interface QueueInterface
      * @param array|callable|MiddlewarePushInterface|string ...$middlewareDefinitions
      * @return MessageInterface
      */
-    public function push(MessageInterface $message, MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions): MessageInterface;
+    public function push(MessageInterface $message, ...$middlewareDefinitions): MessageInterface;
 
     /**
      * Execute all existing jobs and exit
@@ -43,7 +43,7 @@ interface QueueInterface
      *
      * @return JobStatus
      */
-    public function status(string|int $id): JobStatus;
+    public function status($id): JobStatus;
 
     public function withAdapter(AdapterInterface $adapter): self;
 
