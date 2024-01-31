@@ -39,6 +39,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/holdmann/yii3-definitions"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/holdmann/yii3-injector"
         }
     ],
     "require": {
@@ -48,7 +52,7 @@
         "symfony/console": "^5.4|^6.0",
         "yiisoft/definitions": "dev-php7.3",
         "yiisoft/friendly-exception": "^1.0",
-        "yiisoft/injector": "^1.0"
+        "yiisoft/injector": "dev-php7.3"
     },
     "require-dev": {
         "maglnet/composer-require-checker": "^4.7",
