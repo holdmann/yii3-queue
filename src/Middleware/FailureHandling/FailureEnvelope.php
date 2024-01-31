@@ -11,11 +11,18 @@ use Yiisoft\Queue\Message\MessageInterface;
 final class FailureEnvelope implements EnvelopeInterface
 {
     use EnvelopeTrait;
-
-    public function __construct(
-        private MessageInterface $message,
-        private array $meta = [],
-    ) {
+    /**
+     * @var \Yiisoft\Queue\Message\MessageInterface
+     */
+    private $message;
+    /**
+     * @var mixed[]
+     */
+    private $meta = [];
+    public function __construct(MessageInterface $message, array $meta = [])
+    {
+        $this->message = $message;
+        $this->meta = $meta;
     }
 
     public function getMetadata(): array

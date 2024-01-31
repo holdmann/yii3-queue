@@ -58,7 +58,7 @@ final class JobStatusTest extends TestCase
         try {
             TestJobStatus::withStatus(4)->isDone();
         } catch (InvalidStatusException $exception) {
-            self::assertSame($exception::class, InvalidStatusException::class);
+            self::assertSame(get_class($exception), InvalidStatusException::class);
             self::assertSame($exception->getName(), 'Invalid job status provided');
             self::assertSame($exception->getStatus(), 4);
             $this->assertMatchesRegularExpression('/JobStatus::DONE/', $exception->getSolution());

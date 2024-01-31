@@ -19,8 +19,13 @@ use function is_string;
  */
 final class CallableFactory
 {
-    public function __construct(private ContainerInterface $container)
+    /**
+     * @var \Psr\Container\ContainerInterface
+     */
+    private $container;
+    public function __construct(ContainerInterface $container)
     {
+        $this->container = $container;
     }
 
     /**
@@ -31,7 +36,7 @@ final class CallableFactory
      * @throws InvalidCallableConfigurationException Failed to create listener.
      * @throws ContainerExceptionInterface Error while retrieving the entry from container.
      */
-    public function create(mixed $definition): callable
+    public function create($definition): callable
     {
         $callable = null;
 
@@ -74,7 +79,7 @@ final class CallableFactory
                 if ($reflection->isStatic()) {
                     $result = [$className, $methodName];
                 }
-            } catch (ReflectionException) {
+            } catch (ReflectionException $exception) {
             }
         }
 

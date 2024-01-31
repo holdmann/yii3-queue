@@ -18,5 +18,5 @@ interface MiddlewareFactoryPushInterface
      *
      * @return MiddlewarePushInterface
      */
-    public function createPushMiddleware(callable|array|string|MiddlewarePushInterface $middlewareDefinition): MiddlewarePushInterface;
+    public function createPushMiddleware($middlewareDefinition): MiddlewarePushInterface;
 }

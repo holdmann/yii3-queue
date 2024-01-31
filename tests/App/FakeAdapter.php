@@ -10,8 +10,14 @@ use Yiisoft\Queue\Message\MessageInterface;
 
 final class FakeAdapter implements AdapterInterface
 {
-    public array $pushMessages = [];
-    public string $channel = 'default';
+    /**
+     * @var mixed[]
+     */
+    public $pushMessages = [];
+    /**
+     * @var string
+     */
+    public $channel = 'default';
 
     public function push(MessageInterface $message): MessageInterface
     {
@@ -25,7 +31,10 @@ final class FakeAdapter implements AdapterInterface
         //skip
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         //skip
     }

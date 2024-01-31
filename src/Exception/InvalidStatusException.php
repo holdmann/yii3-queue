@@ -10,7 +10,10 @@ use Yiisoft\FriendlyException\FriendlyExceptionInterface;
 
 class InvalidStatusException extends InvalidArgumentException implements FriendlyExceptionInterface
 {
-    private int $status;
+    /**
+     * @var int
+     */
+    private $status;
 
     public function __construct(int $status, string $message = '', int $code = 0, Throwable $previous = null)
     {

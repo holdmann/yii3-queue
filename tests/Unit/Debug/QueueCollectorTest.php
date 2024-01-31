@@ -13,7 +13,10 @@ use Yiisoft\Queue\Tests\App\DummyQueue;
 
 final class QueueCollectorTest extends AbstractCollectorTestCase
 {
-    private Message $pushMessage;
+    /**
+     * @var \Yiisoft\Queue\Message\Message
+     */
+    private $pushMessage;
 
     protected function setUp(): void
     {

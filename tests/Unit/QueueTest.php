@@ -13,7 +13,10 @@ use Yiisoft\Queue\Message\IdEnvelope;
 
 final class QueueTest extends TestCase
 {
-    private bool $needsRealAdapter = true;
+    /**
+     * @var bool
+     */
+    private $needsRealAdapter = true;
 
     protected function setUp(): void
     {
@@ -111,7 +114,7 @@ final class QueueTest extends TestCase
             $envelope = $queue->push($message);
             $queue->status($envelope->getMetadata()[IdEnvelope::MESSAGE_ID_KEY]);
         } catch (AdapterNotConfiguredException $exception) {
-            self::assertSame($exception::class, AdapterNotConfiguredException::class);
+            self::assertSame(get_class($exception), AdapterNotConfiguredException::class);
             self::assertSame($exception->getName(), 'Adapter is not configured');
             $this->assertMatchesRegularExpression('/withAdapter/', $exception->getSolution());
         }
@@ -122,7 +125,7 @@ final class QueueTest extends TestCase
         try {
             $this->getQueue()->run();
         } catch (AdapterNotConfiguredException $exception) {
-            self::assertSame($exception::class, AdapterNotConfiguredException::class);
+            self::assertSame(get_class($exception), AdapterNotConfiguredException::class);
             self::assertSame($exception->getName(), 'Adapter is not configured');
             $this->assertMatchesRegularExpression('/withAdapter/', $exception->getSolution());
         }

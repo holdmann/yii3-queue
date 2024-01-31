@@ -18,7 +18,7 @@ interface MessageInterface
      *
      * @return mixed
      */
-    public function getData(): mixed;
+    public function getData();
 
     /**
      * Returns message metadata: timings, attempts count, metrics, etc.

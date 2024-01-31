@@ -31,11 +31,12 @@ final class InvalidMiddlewareDefinitionException extends InvalidArgumentExceptio
 
     /**
      * @return string|null
+     * @param mixed $middlewareDefinition
      */
-    private function convertDefinitionToString(mixed $middlewareDefinition): ?string
+    private function convertDefinitionToString($middlewareDefinition): ?string
     {
         if (is_object($middlewareDefinition)) {
-            return 'an instance of "' . $middlewareDefinition::class . '"';
+            return 'an instance of "' . get_class($middlewareDefinition) . '"';
         }
 
         if (is_string($middlewareDefinition)) {
@@ -51,7 +52,7 @@ final class InvalidMiddlewareDefinitionException extends InvalidArgumentExceptio
             }
             array_walk(
                 $items,
-                static function (mixed &$item, int|string $key) {
+                static function (&$item, $key) {
                     $item = (string) $item;
                     $item = '"' . $item . '"';
                     if (is_string($key)) {

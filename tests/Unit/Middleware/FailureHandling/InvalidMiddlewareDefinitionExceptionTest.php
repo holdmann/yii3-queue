@@ -35,7 +35,10 @@ final class InvalidMiddlewareDefinitionExceptionTest extends TestCase
     }
 
     #[DataProvider('dataBase')]
-    public function testBase(mixed $definition, string $expected): void
+    /**
+     * @param mixed $definition
+     */
+    public function testBase($definition, string $expected): void
     {
         $exception = new InvalidMiddlewareDefinitionException($definition);
         self::assertStringEndsWith('. Got ' . $expected . '.', $exception->getMessage());
@@ -50,7 +53,10 @@ final class InvalidMiddlewareDefinitionExceptionTest extends TestCase
     }
 
     #[DataProvider('dataUnknownDefinition')]
-    public function testUnknownDefinition(mixed $definition): void
+    /**
+     * @param mixed $definition
+     */
+    public function testUnknownDefinition($definition): void
     {
         $exception = new InvalidMiddlewareDefinitionException($definition);
         self::assertSame(

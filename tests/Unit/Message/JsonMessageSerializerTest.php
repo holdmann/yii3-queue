@@ -19,8 +19,9 @@ final class JsonMessageSerializerTest extends TestCase
 {
     /**
      * @dataProvider dataUnsupportedPayloadFormat
+     * @param mixed $payload
      */
-    public function testPayloadFormat(mixed $payload): void
+    public function testPayloadFormat($payload): void
     {
         $serializer = $this->createSerializer();
 
@@ -39,8 +40,9 @@ final class JsonMessageSerializerTest extends TestCase
 
     /**
      * @dataProvider dataUnsupportedMetadataFormat
+     * @param mixed $meta
      */
-    public function testMetadataFormat(mixed $meta): void
+    public function testMetadataFormat($meta): void
     {
         $payload = ['data' => 'test', 'meta' => $meta];
         $serializer = $this->createSerializer();

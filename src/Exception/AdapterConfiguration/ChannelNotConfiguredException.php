@@ -11,7 +11,10 @@ use Yiisoft\Queue\QueueFactory;
 
 class ChannelNotConfiguredException extends InvalidArgumentException implements FriendlyExceptionInterface
 {
-    private string $channel;
+    /**
+     * @var string
+     */
+    private $channel;
 
     public function __construct(string $channel, int $code = 0, Throwable $previous = null)
     {
