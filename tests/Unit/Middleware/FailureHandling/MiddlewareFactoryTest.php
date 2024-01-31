@@ -130,8 +130,10 @@ final class MiddlewareFactoryTest extends TestCase
         ];
     }
 
-    #[DataProvider('invalidMiddlewareDefinitionProvider')]
-    public function testInvalidMiddleware(mixed $definition): void
+    /**
+     * @param mixed $definition
+     */
+    public function testInvalidMiddleware($definition): void
     {
         $this->expectException(InvalidMiddlewareDefinitionException::class);
         $this->getMiddlewareFactory()->createFailureMiddleware($definition);
@@ -153,7 +155,7 @@ final class MiddlewareFactoryTest extends TestCase
 
     private function getMiddlewareFactory(ContainerInterface $container = null): MiddlewareFactoryFailureInterface
     {
-        $container ??= $this->getContainer([AdapterInterface::class => new FakeAdapter()]);
+        $container = $container ?? $this->getContainer([AdapterInterface::class => new FakeAdapter()]);
 
         return new MiddlewareFactoryFailure($container, new CallableFactory($container));
     }

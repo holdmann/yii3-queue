@@ -29,16 +29,42 @@ use Yiisoft\Queue\Message\IdEnvelope;
 
 final class Worker implements WorkerInterface
 {
-    private array $handlersCached = [];
-
-    public function __construct(
-        private array $handlers,
-        private LoggerInterface $logger,
-        private Injector $injector,
-        private ContainerInterface $container,
-        private ConsumeMiddlewareDispatcher $consumeMiddlewareDispatcher,
-        private FailureMiddlewareDispatcher $failureMiddlewareDispatcher,
-    ) {
+    /**
+     * @var mixed[]
+     */
+    private $handlersCached = [];
+    /**
+     * @var mixed[]
+     */
+    private $handlers;
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+    /**
+     * @var \Yiisoft\Injector\Injector
+     */
+    private $injector;
+    /**
+     * @var \Psr\Container\ContainerInterface
+     */
+    private $container;
+    /**
+     * @var \Yiisoft\Queue\Middleware\Consume\ConsumeMiddlewareDispatcher
+     */
+    private $consumeMiddlewareDispatcher;
+    /**
+     * @var \Yiisoft\Queue\Middleware\FailureHandling\FailureMiddlewareDispatcher
+     */
+    private $failureMiddlewareDispatcher;
+    public function __construct(array $handlers, LoggerInterface $logger, Injector $injector, ContainerInterface $container, ConsumeMiddlewareDispatcher $consumeMiddlewareDispatcher, FailureMiddlewareDispatcher $failureMiddlewareDispatcher)
+    {
+        $this->handlers = $handlers;
+        $this->logger = $logger;
+        $this->injector = $injector;
+        $this->container = $container;
+        $this->consumeMiddlewareDispatcher = $consumeMiddlewareDispatcher;
+        $this->failureMiddlewareDispatcher = $failureMiddlewareDispatcher;
     }
 
     /**
@@ -55,7 +81,9 @@ final class Worker implements WorkerInterface
         }
 
         $request = new ConsumeRequest($message, $queue);
-        $closure = fn (MessageInterface $message): mixed => $this->injector->invoke($handler, [$message]);
+        $closure = function (MessageInterface $message) use ($handler) {
+            return $this->injector->invoke($handler, [$message]);
+        };
         try {
             return $this->consumeMiddlewareDispatcher->dispatch($request, $this->createConsumeHandler($closure))->getMessage();
         } catch (Throwable $exception) {
@@ -91,7 +119,7 @@ final class Worker implements WorkerInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    private function prepare(callable|object|array|string|null $definition): callable|null
+    private function prepare($definition): ?callable
     {
         if (is_string($definition) && $this->container->has($definition)) {
             return $this->container->get($definition);

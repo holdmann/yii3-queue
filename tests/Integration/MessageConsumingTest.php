@@ -18,7 +18,10 @@ use Yiisoft\Queue\Worker\Worker;
 
 final class MessageConsumingTest extends TestCase
 {
-    private array $messagesProcessed;
+    /**
+     * @var mixed[]
+     */
+    private $messagesProcessed;
 
     public function testMessagesConsumed(): void
     {
@@ -26,7 +29,9 @@ final class MessageConsumingTest extends TestCase
 
         $container = $this->createMock(ContainerInterface::class);
         $worker = new Worker(
-            ['test' => fn (MessageInterface $message): mixed => $this->messagesProcessed[] = $message->getData()],
+            ['test' => function (MessageInterface $message) {
+                return $this->messagesProcessed[] = $message->getData();
+            }],
             new NullLogger(),
             new Injector($container),
             $container,

@@ -23,18 +23,54 @@ final class Queue implements QueueInterface
     /**
      * @var array|array[]|callable[]|MiddlewarePushInterface[]|string[]
      */
-    private array $middlewareDefinitions;
-    private AdapterPushHandler $adapterPushHandler;
+    private $middlewareDefinitions;
+    /**
+     * @var \Yiisoft\Queue\Middleware\Push\AdapterPushHandler
+     */
+    private $adapterPushHandler;
+    /**
+     * @var \Yiisoft\Queue\Worker\WorkerInterface
+     */
+    private $worker;
+    /**
+     * @var \Yiisoft\Queue\Cli\LoopInterface
+     */
+    private $loop;
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+    /**
+     * @var \Yiisoft\Queue\Middleware\Push\PushMiddlewareDispatcher
+     */
+    private $pushMiddlewareDispatcher;
+    /**
+     * @var \Yiisoft\Queue\Adapter\AdapterInterface|null
+     */
+    private $adapter;
+    /**
+     * @var string
+     */
+    private $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME;
 
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
     public function __construct(
-        private WorkerInterface $worker,
-        private LoopInterface $loop,
-        private LoggerInterface $logger,
-        private PushMiddlewareDispatcher $pushMiddlewareDispatcher,
-        private ?AdapterInterface $adapter = null,
-        private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
-        MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions
+        WorkerInterface $worker,
+        LoopInterface $loop,
+        LoggerInterface $logger,
+        PushMiddlewareDispatcher $pushMiddlewareDispatcher,
+        ?AdapterInterface $adapter = null,
+        string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
+        ...$middlewareDefinitions
     ) {
+        $this->worker = $worker;
+        $this->loop = $loop;
+        $this->logger = $logger;
+        $this->pushMiddlewareDispatcher = $pushMiddlewareDispatcher;
+        $this->adapter = $adapter;
+        $this->channelName = $channelName;
         $this->middlewareDefinitions = $middlewareDefinitions;
         $this->adapterPushHandler = new AdapterPushHandler();
     }
@@ -44,9 +80,12 @@ final class Queue implements QueueInterface
         return $this->channelName;
     }
 
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
     public function push(
         MessageInterface $message,
-        MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions
+        ...$middlewareDefinitions
     ): MessageInterface {
         $this->logger->debug(
             'Preparing to push message with handler name "{handlerName}".',
@@ -100,11 +139,16 @@ final class Queue implements QueueInterface
 
         $this->logger->info('Start listening to the queue.');
         /** @psalm-suppress PossiblyNullReference */
-        $this->adapter->subscribe(fn (MessageInterface $message) => $this->handle($message));
+        $this->adapter->subscribe(function (MessageInterface $message) {
+            return $this->handle($message);
+        });
         $this->logger->info('Finish listening to the queue.');
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         $this->checkAdapter();
 
@@ -112,7 +156,10 @@ final class Queue implements QueueInterface
         return $this->adapter->status($id);
     }
 
-    public function withAdapter(AdapterInterface $adapter): self
+    /**
+     * @return $this
+     */
+    public function withAdapter(AdapterInterface $adapter): \Yiisoft\Queue\QueueInterface
     {
         $new = clone $this;
         $new->adapter = $adapter;
@@ -120,7 +167,10 @@ final class Queue implements QueueInterface
         return $new;
     }
 
-    public function withMiddlewares(MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions): self
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
+    public function withMiddlewares(...$middlewareDefinitions): self
     {
         $instance = clone $this;
         $instance->middlewareDefinitions = $middlewareDefinitions;
@@ -128,15 +178,23 @@ final class Queue implements QueueInterface
         return $instance;
     }
 
-    public function withMiddlewaresAdded(MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions): self
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
+    public function withMiddlewaresAdded(...$middlewareDefinitions): self
     {
         $instance = clone $this;
-        $instance->middlewareDefinitions = [...array_values($instance->middlewareDefinitions), ...array_values($middlewareDefinitions)];
+        $item0Unpacked = array_values($instance->middlewareDefinitions);
+        $item1Unpacked = array_values($middlewareDefinitions);
+        $instance->middlewareDefinitions = array_merge($item0Unpacked, $item1Unpacked);
 
         return $instance;
     }
 
-    public function withChannelName(string $channel): self
+    /**
+     * @return $this
+     */
+    public function withChannelName(string $channel): \Yiisoft\Queue\QueueInterface
     {
         $instance = clone $this;
         $instance->channelName = $channel;
@@ -165,13 +223,24 @@ final class Queue implements QueueInterface
             $this->pushMiddlewareDispatcher,
             array_merge($this->middlewareDefinitions, $middlewares)
         ) implements MessageHandlerPushInterface {
-            public function __construct(
-                private AdapterPushHandler $adapterPushHandler,
-                private PushMiddlewareDispatcher $dispatcher,
-                private array $middlewares,
-            ) {
+            /**
+             * @var \Yiisoft\Queue\Middleware\Push\AdapterPushHandler
+             */
+            private $adapterPushHandler;
+            /**
+             * @var \Yiisoft\Queue\Middleware\Push\PushMiddlewareDispatcher
+             */
+            private $dispatcher;
+            /**
+             * @var mixed[]
+             */
+            private $middlewares;
+            public function __construct(AdapterPushHandler $adapterPushHandler, PushMiddlewareDispatcher $dispatcher, array $middlewares)
+            {
+                $this->adapterPushHandler = $adapterPushHandler;
+                $this->dispatcher = $dispatcher;
+                $this->middlewares = $middlewares;
             }
-
             public function handlePush(PushRequest $request): PushRequest
             {
                 return $this->dispatcher

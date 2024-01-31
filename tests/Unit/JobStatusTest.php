@@ -42,11 +42,9 @@ final class JobStatusTest extends TestCase
         ];
     }
 
-    #[DataProvider('getStatusPairs')]
     public function testInstanceValue(string $statusName, string $positiveMethod, array $negatives): void
     {
         $status = JobStatus::$statusName();
-
         self::assertTrue($status->$positiveMethod(), "$positiveMethod must be true for status $statusName");
         foreach ($negatives as $negative) {
             self::assertFalse($status->$negative(), "$negative must be false for status $statusName");

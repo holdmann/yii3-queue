@@ -31,13 +31,34 @@ use Yiisoft\Queue\Worker\WorkerInterface;
  */
 abstract class TestCase extends BaseTestCase
 {
-    protected ?ContainerInterface $container = null;
-    protected Queue|null $queue = null;
-    protected ?AdapterInterface $adapter = null;
-    protected ?LoopInterface $loop = null;
-    protected ?WorkerInterface $worker = null;
-    protected array $eventHandlers = [];
-    protected int $executionTimes;
+    /**
+     * @var \Psr\Container\ContainerInterface|null
+     */
+    protected $container;
+    /**
+     * @var \Yiisoft\Queue\Queue|null
+     */
+    protected $queue = null;
+    /**
+     * @var \Yiisoft\Queue\Adapter\AdapterInterface|null
+     */
+    protected $adapter;
+    /**
+     * @var \Yiisoft\Queue\Cli\LoopInterface|null
+     */
+    protected $loop;
+    /**
+     * @var \Yiisoft\Queue\Worker\WorkerInterface|null
+     */
+    protected $worker;
+    /**
+     * @var mixed[]
+     */
+    protected $eventHandlers = [];
+    /**
+     * @var int
+     */
+    protected $executionTimes;
 
     protected function setUp(): void
     {
@@ -162,13 +183,15 @@ abstract class TestCase extends BaseTestCase
     protected function getMessageHandlers(): array
     {
         return [
-            'simple' => fn () => $this->executionTimes++,
-            'exceptional' => function (): never {
+            'simple' => function () {
+                return $this->executionTimes++;
+            },
+            'exceptional' => function () {
                 $this->executionTimes++;
 
                 throw new RuntimeException('test');
             },
-            'retryable' => function (): never {
+            'retryable' => function () {
                 $this->executionTimes++;
 
                 throw new RuntimeException('test');

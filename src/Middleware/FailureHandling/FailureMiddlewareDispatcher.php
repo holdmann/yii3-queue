@@ -15,15 +15,22 @@ final class FailureMiddlewareDispatcher
      *
      * @var MiddlewareFailureStack[] The middleware stack.
      */
-    private array $stack = [];
-
+    private $stack = [];
+    /**
+     * @var \Yiisoft\Queue\Middleware\FailureHandling\MiddlewareFactoryFailureInterface
+     */
+    private $middlewareFactory;
+    /**
+     * @var array[][]|callable[][]|MiddlewareFailureInterface[][]|string[][]
+     */
+    private $middlewareDefinitions;
     /**
      * @param array[][]|callable[][]|MiddlewareFailureInterface[][]|string[][] $middlewareDefinitions
      */
-    public function __construct(
-        private MiddlewareFactoryFailureInterface $middlewareFactory,
-        private array $middlewareDefinitions,
-    ) {
+    public function __construct(MiddlewareFactoryFailureInterface $middlewareFactory, array $middlewareDefinitions)
+    {
+        $this->middlewareFactory = $middlewareFactory;
+        $this->middlewareDefinitions = $middlewareDefinitions;
         $this->init();
     }
 
@@ -90,15 +97,17 @@ final class FailureMiddlewareDispatcher
 
     /**
      * @return Closure[]
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\FailureHandling\MiddlewareFailureInterface ...$definitions
      */
-    private function buildMiddlewares(array|callable|string|MiddlewareFailureInterface ...$definitions): array
+    private function buildMiddlewares(...$definitions): array
     {
         $middlewares = [];
         $factory = $this->middlewareFactory;
 
         foreach ($definitions as $middlewareDefinition) {
-            $middlewares[] = static fn (): MiddlewareFailureInterface =>
-                $factory->createFailureMiddleware($middlewareDefinition);
+            $middlewares[] = static function () use ($factory, $middlewareDefinition) : MiddlewareFailureInterface {
+                return $factory->createFailureMiddleware($middlewareDefinition);
+            };
         }
 
         return $middlewares;
