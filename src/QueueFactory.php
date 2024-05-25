@@ -7,7 +7,7 @@ namespace Yiisoft\Queue;
 use Closure;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
-use WeakReference;
+//use WeakReference;
 use Yiisoft\Definitions\ArrayDefinition;
 use Yiisoft\Definitions\Exception\InvalidConfigException;
 use Yiisoft\Definitions\Helpers\DefinitionValidator;
@@ -91,7 +91,8 @@ final class QueueFactory implements QueueFactoryInterface
             $queue = $this->queueCollection[$channel]->get();
         } else {
             $queue = $this->create($channel);
-            $this->queueCollection[$channel] = WeakReference::create($queue);
+            //$this->queueCollection[$channel] = WeakReference::create($queue);
+            $this->queueCollection[$channel] = $queue;
         }
 
         return $queue;
