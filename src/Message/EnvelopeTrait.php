@@ -16,7 +16,7 @@ trait EnvelopeTrait
         return $this->message;
     }
 
-    public function withMessage(MessageInterface $message): self
+    public function withMessage(MessageInterface $message): EnvelopeInterface
     {
         $instance = clone $this;
         $instance->message = $message;
