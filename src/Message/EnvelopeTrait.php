@@ -16,7 +16,7 @@ trait EnvelopeTrait
         return $this->message;
     }
 
-    public function withMessage(MessageInterface $message): self
+    public function withMessage(MessageInterface $message): EnvelopeInterface
     {
         $instance = clone $this;
         $instance->message = $message;
@@ -37,9 +37,9 @@ trait EnvelopeTrait
         return $this->message->getData();
     }
 
-    public static function fromMessage(MessageInterface $message): self
+    public static function fromMessage(MessageInterface $message): EnvelopeInterface
     {
-        return new static($message);
+        return new IdEnvelope($message);
     }
 
     public function getMetadata(): array
