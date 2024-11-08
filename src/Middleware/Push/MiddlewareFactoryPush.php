@@ -22,14 +22,18 @@ use function is_string;
 final class MiddlewareFactoryPush implements MiddlewareFactoryPushInterface
 {
     /**
+     * @var ContainerInterface
+     */
+    private ContainerInterface $container;
+    private CallableFactory $callableFactory;
+    /**
      * @param ContainerInterface $container Container to use for resolving definitions.
      */
-    public function __construct(
-        private ContainerInterface $container,
-        private CallableFactory $callableFactory,
-    ) {
+    public function __construct(ContainerInterface $container, CallableFactory $callableFactory)
+    {
+        $this->container = $container;
+        $this->callableFactory = $callableFactory;
     }
-
     /**
      * @param array|callable|MiddlewarePushInterface|string $middlewareDefinition Middleware definition in one of the
      *     following formats:
@@ -52,7 +56,7 @@ final class MiddlewareFactoryPush implements MiddlewareFactoryPushInterface
      * @return MiddlewarePushInterface
      */
     public function createPushMiddleware(
-        MiddlewarePushInterface|callable|array|string $middlewareDefinition
+        $middlewareDefinition
     ): MiddlewarePushInterface {
         if ($middlewareDefinition instanceof MiddlewarePushInterface) {
             return $middlewareDefinition;
@@ -61,10 +65,12 @@ final class MiddlewareFactoryPush implements MiddlewareFactoryPushInterface
         if (is_string($middlewareDefinition)) {
             return $this->getFromContainer($middlewareDefinition);
         }
+        if ($this->tryGetFromArrayDefinition($middlewareDefinition) === null) {
+            throw new InvalidMiddlewareDefinitionException($middlewareDefinition);
+        }
 
         return $this->tryGetFromCallable($middlewareDefinition)
-            ?? $this->tryGetFromArrayDefinition($middlewareDefinition)
-            ?? throw new InvalidMiddlewareDefinitionException($middlewareDefinition);
+            ?? $this->tryGetFromArrayDefinition($middlewareDefinition);
     }
 
     private function getFromContainer(string $middlewareDefinition): MiddlewarePushInterface
@@ -88,9 +94,11 @@ final class MiddlewareFactoryPush implements MiddlewareFactoryPushInterface
     {
         return new class ($callback, $this->container) implements MiddlewarePushInterface {
             private $callback;
+            private ContainerInterface $container;
 
-            public function __construct(callable $callback, private ContainerInterface $container)
+            public function __construct(callable $callback, ContainerInterface $container)
             {
+                $this->container = $container;
                 $this->callback = $callback;
             }
 
@@ -110,8 +118,11 @@ final class MiddlewareFactoryPush implements MiddlewareFactoryPushInterface
         };
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|mixed[]|string $definition
+     */
     private function tryGetFromCallable(
-        callable|MiddlewarePushInterface|array|string $definition
+        $definition
     ): ?MiddlewarePushInterface {
         if ($definition instanceof Closure) {
             return $this->wrapCallable($definition);
@@ -124,15 +135,18 @@ final class MiddlewareFactoryPush implements MiddlewareFactoryPushInterface
             try {
                 return $this->wrapCallable($this->callableFactory->create($definition));
             } catch (InvalidCallableConfigurationException $exception) {
-                throw new InvalidMiddlewareDefinitionException($definition, previous: $exception);
+                throw new InvalidMiddlewareDefinitionException($definition, 0, $exception);
             }
         } else {
             return null;
         }
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|mixed[]|string $definition
+     */
     private function tryGetFromArrayDefinition(
-        callable|MiddlewarePushInterface|array|string $definition
+        $definition
     ): ?MiddlewarePushInterface {
         if (!is_array($definition)) {
             return null;
@@ -147,7 +161,7 @@ final class MiddlewareFactoryPush implements MiddlewareFactoryPushInterface
             }
 
             throw new InvalidMiddlewareDefinitionException($definition);
-        } catch (InvalidConfigException) {
+        } catch (InvalidConfigException $exception) {
         }
 
         throw new InvalidMiddlewareDefinitionException($definition);

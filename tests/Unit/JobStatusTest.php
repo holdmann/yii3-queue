@@ -42,11 +42,9 @@ final class JobStatusTest extends TestCase
         ];
     }
 
-    #[DataProvider('getStatusPairs')]
     public function testInstanceValue(string $statusName, string $positiveMethod, array $negatives): void
     {
         $status = JobStatus::$statusName();
-
         self::assertTrue($status->$positiveMethod(), "$positiveMethod must be true for status $statusName");
         foreach ($negatives as $negative) {
             self::assertFalse($status->$negative(), "$negative must be false for status $statusName");
@@ -58,7 +56,7 @@ final class JobStatusTest extends TestCase
         try {
             TestJobStatus::withStatus(4)->isDone();
         } catch (InvalidStatusException $exception) {
-            self::assertSame($exception::class, InvalidStatusException::class);
+            self::assertSame(get_class($exception), InvalidStatusException::class);
             self::assertSame($exception->getName(), 'Invalid job status provided');
             self::assertSame($exception->getStatus(), 4);
             $this->assertMatchesRegularExpression('/JobStatus::DONE/', $exception->getSolution());

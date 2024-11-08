@@ -32,7 +32,10 @@ use Yiisoft\Queue\Worker\WorkerInterface;
 abstract class TestCase extends BaseTestCase
 {
     protected ?ContainerInterface $container = null;
-    protected Queue|null $queue = null;
+    /**
+     * @var \Yiisoft\Queue\Queue|null
+     */
+    protected $queue = null;
     protected ?AdapterInterface $adapter = null;
     protected ?LoopInterface $loop = null;
     protected ?WorkerInterface $worker = null;
@@ -163,12 +166,12 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             'simple' => fn () => $this->executionTimes++,
-            'exceptional' => function (): never {
+            'exceptional' => function () {
                 $this->executionTimes++;
 
                 throw new RuntimeException('test');
             },
-            'retryable' => function (): never {
+            'retryable' => function () {
                 $this->executionTimes++;
 
                 throw new RuntimeException('test');

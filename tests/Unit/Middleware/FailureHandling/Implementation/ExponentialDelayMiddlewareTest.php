@@ -114,16 +114,13 @@ class ExponentialDelayMiddlewareTest extends TestCase
         ];
     }
 
-    #[DataProvider('constructorRequirementsProvider')]
     public function testConstructorRequirements(bool $success, array $arguments): void
     {
         $arguments[] = $this->createMock(DelayMiddlewareInterface::class);
         $arguments[] = $this->createMock(QueueInterface::class);
-
         if (!$success) {
             $this->expectException(InvalidArgumentException::class);
         }
-
         $strategy = new ExponentialDelayMiddleware(...$arguments);
         self::assertInstanceOf(ExponentialDelayMiddleware::class, $strategy);
     }

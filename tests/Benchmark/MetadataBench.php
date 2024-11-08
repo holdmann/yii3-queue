@@ -17,7 +17,6 @@ final class MetadataBench
     /**
      * Create metadata as array and read its value from array
      */
-    #[Tag('metadata_read')]
     public function benchArrayRead(): void
     {
         $message = new Message('foo', 'bar', ['id' => 1]);
@@ -27,7 +26,6 @@ final class MetadataBench
     /**
      * Create metadata as object and read its value immediately
      */
-    #[Tag('metadata_read')]
     public function benchEnvelopeRead(): void
     {
         $message = new IdEnvelope(new Message('foo', 'bar'), 1);
@@ -37,7 +35,6 @@ final class MetadataBench
     /**
      * Create metadata as array and read its value from an envelope object
      */
-    #[Tag('metadata_read')]
     public function benchEnvelopeReadRestored(): void
     {
         $message = IdEnvelope::fromMessage(new Message('foo', 'bar', ['id' => 1]));
@@ -62,8 +59,6 @@ final class MetadataBench
      *
      * @psalm-param array{message: MessageInterface} $params
      */
-    #[ParamProviders('provideEnvelopeStack')]
-    #[Tag('metadata_read')]
     public function benchEnvelopeReadFromStack(array $params): void
     {
         $id = IdEnvelope::fromMessage($params['message'])->getId();
@@ -81,8 +76,6 @@ final class MetadataBench
      *
      * @psalm-param array{0: int} $params
      */
-    #[ParamProviders('provideEnvelopeStackCounts')]
-    #[Tag('metadata_create')]
     public function benchEnvelopeStackCreation(array $params): void
     {
         $message = new Message('foo', 'bar');
@@ -96,8 +89,6 @@ final class MetadataBench
      *
      * @psalm-param array{0: int} $params
      */
-    #[ParamProviders('provideEnvelopeStackCounts')]
-    #[Tag('metadata_create')]
     public function benchMetadataArrayCreation(array $params): void
     {
         $metadata = ['failure-meta' => []];

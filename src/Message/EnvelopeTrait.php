@@ -26,7 +26,10 @@ trait EnvelopeTrait
         return $this->message->getHandlerName();
     }
 
-    public function getData(): mixed
+    /**
+     * @return mixed
+     */
+    public function getData()
     {
         return $this->message->getData();
     }

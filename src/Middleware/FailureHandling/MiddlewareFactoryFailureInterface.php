@@ -18,5 +18,5 @@ interface MiddlewareFactoryFailureInterface
      *
      * @return MiddlewareFailureInterface
      */
-    public function createFailureMiddleware(callable|array|string|MiddlewareFailureInterface $middlewareDefinition): MiddlewareFailureInterface;
+    public function createFailureMiddleware($middlewareDefinition): MiddlewareFailureInterface;
 }

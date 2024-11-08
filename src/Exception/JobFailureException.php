@@ -11,8 +11,10 @@ use Yiisoft\Queue\Message\IdEnvelope;
 
 class JobFailureException extends RuntimeException
 {
-    public function __construct(private MessageInterface $queueMessage, Throwable $previous)
+    private MessageInterface $queueMessage;
+    public function __construct(MessageInterface $queueMessage, Throwable $previous)
     {
+        $this->queueMessage = $queueMessage;
         $error = $previous->getMessage();
         $messageId = $queueMessage->getMetadata()[IdEnvelope::MESSAGE_ID_KEY] ?? 'null';
         $messageText = "Processing of message #$messageId is stopped because of an exception:\n$error.";

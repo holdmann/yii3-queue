@@ -18,11 +18,13 @@ final class PushMiddlewareDispatcher
      * @var array[]|callable[]|MiddlewarePushInterface[]|string[]
      */
     private array $middlewareDefinitions;
-
-    public function __construct(
-        private MiddlewareFactoryPushInterface $middlewareFactory,
-        array|callable|string|MiddlewarePushInterface ...$middlewareDefinitions,
-    ) {
+    private MiddlewareFactoryPushInterface $middlewareFactory;
+    /**
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
+    public function __construct(MiddlewareFactoryPushInterface $middlewareFactory, ...$middlewareDefinitions)
+    {
+        $this->middlewareFactory = $middlewareFactory;
         $this->middlewareDefinitions = array_reverse($middlewareDefinitions);
     }
 

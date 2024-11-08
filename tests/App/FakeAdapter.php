@@ -25,7 +25,10 @@ final class FakeAdapter implements AdapterInterface
         //skip
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         //skip
     }

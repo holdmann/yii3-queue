@@ -15,16 +15,23 @@ final class MiddlewarePushStack implements MessageHandlerPushInterface
      * @var MessageHandlerPushInterface|null stack of middleware
      */
     private ?MessageHandlerPushInterface $stack = null;
-
+    /**
+     * @var Closure[]
+     */
+    private array $middlewares;
+    /**
+     * @var MessageHandlerPushInterface
+     */
+    private MessageHandlerPushInterface $finishHandler;
     /**
      * @param Closure[] $middlewares Middlewares.
      * @param MessageHandlerPushInterface $finishHandler Fallback handler
      * events.
      */
-    public function __construct(
-        private array $middlewares,
-        private MessageHandlerPushInterface $finishHandler,
-    ) {
+    public function __construct(array $middlewares, MessageHandlerPushInterface $finishHandler)
+    {
+        $this->middlewares = $middlewares;
+        $this->finishHandler = $finishHandler;
     }
 
     public function handlePush(PushRequest $request): PushRequest
@@ -55,11 +62,12 @@ final class MiddlewarePushStack implements MessageHandlerPushInterface
     {
         return new class ($middlewareFactory, $handler) implements MessageHandlerPushInterface {
             private ?MiddlewarePushInterface $middleware = null;
-
-            public function __construct(
-                private Closure $middlewareFactory,
-                private MessageHandlerPushInterface $handler,
-            ) {
+            private Closure $middlewareFactory;
+            private MessageHandlerPushInterface $handler;
+            public function __construct(Closure $middlewareFactory, MessageHandlerPushInterface $handler)
+            {
+                $this->middlewareFactory = $middlewareFactory;
+                $this->handler = $handler;
             }
 
             public function handlePush(PushRequest $request): PushRequest

@@ -21,7 +21,25 @@ use Yiisoft\Queue\Middleware\InvalidCallableConfigurationException;
 final class QueueFactory implements QueueFactoryInterface
 {
     private array $queueCollection = [];
-
+    /**
+     * @var array<string, mixed>
+     */
+    private array $channelConfiguration;
+    /**
+     * @var QueueInterface
+     */
+    private QueueInterface $queue;
+    private ContainerInterface $container;
+    private CallableFactory $callableFactory;
+    private Injector $injector;
+    /**
+     * @var bool
+     */
+    private bool $enableRuntimeChannelDefinition = false;
+    /**
+     * @var AdapterInterface|null
+     */
+    private ?AdapterInterface $defaultAdapter = null;
     /**
      * QueueFactory constructor.
      *
@@ -35,15 +53,15 @@ final class QueueFactory implements QueueFactoryInterface
      * @param AdapterInterface|null $defaultAdapter A default adapter implementation.
      * It must be set when $enableRuntimeChannelDefinition is true.
      */
-    public function __construct(
-        private array $channelConfiguration,
-        private QueueInterface $queue,
-        private ContainerInterface $container,
-        private CallableFactory $callableFactory,
-        private Injector $injector,
-        private bool $enableRuntimeChannelDefinition = false,
-        private ?AdapterInterface $defaultAdapter = null,
-    ) {
+    public function __construct(array $channelConfiguration, QueueInterface $queue, ContainerInterface $container, CallableFactory $callableFactory, Injector $injector, bool $enableRuntimeChannelDefinition = false, ?AdapterInterface $defaultAdapter = null)
+    {
+        $this->channelConfiguration = $channelConfiguration;
+        $this->queue = $queue;
+        $this->container = $container;
+        $this->callableFactory = $callableFactory;
+        $this->injector = $injector;
+        $this->enableRuntimeChannelDefinition = $enableRuntimeChannelDefinition;
+        $this->defaultAdapter = $defaultAdapter;
         if ($enableRuntimeChannelDefinition === true && $defaultAdapter === null) {
             $message = 'Either $enableRuntimeChannelDefinition must be false, or $defaultAdapter should be provided.';
 
@@ -89,7 +107,10 @@ final class QueueFactory implements QueueFactoryInterface
         return $this->queue->withChannelName($channel)->withAdapter($this->defaultAdapter->withChannel($channel));
     }
 
-    private function checkDefinitionType(string $channel, mixed $definition): void
+    /**
+     * @param mixed $definition
+     */
+    private function checkDefinitionType(string $channel, $definition): void
     {
         if (
             !$definition instanceof AdapterInterface
@@ -101,9 +122,12 @@ final class QueueFactory implements QueueFactoryInterface
         }
     }
 
+    /**
+     * @param \Yiisoft\Queue\Adapter\AdapterInterface|callable|mixed[]|string $definition
+     */
     public function createFromDefinition(
         string $channel,
-        AdapterInterface|callable|array|string $definition
+        $definition
     ): AdapterInterface {
         if ($definition instanceof AdapterInterface) {
             return $definition;
@@ -112,10 +136,12 @@ final class QueueFactory implements QueueFactoryInterface
         if (is_string($definition)) {
             return $this->getFromContainer($channel, $definition);
         }
+        if ($this->tryGetFromArrayDefinition($channel, $definition) === null) {
+            throw new ChannelIncorrectlyConfigured($channel, $definition);
+        }
 
         return $this->tryGetFromCallable($channel, $definition)
-            ?? $this->tryGetFromArrayDefinition($channel, $definition)
-            ?? throw new ChannelIncorrectlyConfigured($channel, $definition);
+            ?? $this->tryGetFromArrayDefinition($channel, $definition);
     }
 
     private function getFromContainer(string $channel, string $definition): AdapterInterface
@@ -135,9 +161,12 @@ final class QueueFactory implements QueueFactoryInterface
         throw new ChannelIncorrectlyConfigured($channel, $definition);
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Adapter\AdapterInterface|mixed[]|string $definition
+     */
     private function tryGetFromCallable(
         string $channel,
-        callable|AdapterInterface|array|string $definition
+        $definition
     ): ?AdapterInterface {
         $callable = null;
 
@@ -152,7 +181,7 @@ final class QueueFactory implements QueueFactoryInterface
             try {
                 $callable = $this->callableFactory->create($definition);
             } catch (InvalidCallableConfigurationException $exception) {
-                throw new ChannelIncorrectlyConfigured($channel, $definition, previous: $exception);
+                throw new ChannelIncorrectlyConfigured($channel, $definition, 0, $exception);
             }
         }
 
@@ -167,9 +196,12 @@ final class QueueFactory implements QueueFactoryInterface
         return null;
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Adapter\AdapterInterface|mixed[]|string $definition
+     */
     private function tryGetFromArrayDefinition(
         string $channel,
-        callable|AdapterInterface|array|string $definition
+        $definition
     ): ?AdapterInterface {
         if (!is_array($definition)) {
             return null;
@@ -184,7 +216,7 @@ final class QueueFactory implements QueueFactoryInterface
             }
 
             throw new ChannelIncorrectlyConfigured($channel, $definition);
-        } catch (InvalidConfigException) {
+        } catch (InvalidConfigException $exception) {
         }
 
         throw new ChannelIncorrectlyConfigured($channel, $definition);

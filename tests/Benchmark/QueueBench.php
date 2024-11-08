@@ -29,9 +29,18 @@ use Yiisoft\Test\Support\Container\SimpleContainer;
 
 final class QueueBench
 {
-    private readonly QueueInterface $queue;
-    private readonly JsonMessageSerializer $serializer;
-    private readonly VoidAdapter $adapter;
+    /**
+     * @readonly
+     */
+    private QueueInterface $queue;
+    /**
+     * @readonly
+     */
+    private JsonMessageSerializer $serializer;
+    /**
+     * @readonly
+     */
+    private VoidAdapter $adapter;
 
     public function __construct()
     {
@@ -79,8 +88,6 @@ final class QueueBench
         ];
     }
 
-    #[ParamProviders('providePush')]
-    #[Tag('queue_push')]
     public function benchPush(array $params): void
     {
         $this->queue->push($params['message']);
@@ -102,8 +109,6 @@ final class QueueBench
         ];
     }
 
-    #[ParamProviders('provideConsume')]
-    #[Tag('queue_consume')]
     public function benchConsume(array $params): void
     {
         $this->adapter->message = $params['message'];

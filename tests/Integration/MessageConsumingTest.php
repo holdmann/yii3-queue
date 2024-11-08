@@ -26,7 +26,7 @@ final class MessageConsumingTest extends TestCase
 
         $container = $this->createMock(ContainerInterface::class);
         $worker = new Worker(
-            ['test' => fn (MessageInterface $message): mixed => $this->messagesProcessed[] = $message->getData()],
+            ['test' => fn (MessageInterface $message) => $this->messagesProcessed[] = $message->getData()],
             new NullLogger(),
             new Injector($container),
             $container,
