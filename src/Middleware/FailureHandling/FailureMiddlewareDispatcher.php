@@ -16,14 +16,18 @@ final class FailureMiddlewareDispatcher
      * @var MiddlewareFailureStack[] The middleware stack.
      */
     private array $stack = [];
-
+    private MiddlewareFactoryFailureInterface $middlewareFactory;
+    /**
+     * @var array[][]|callable[][]|MiddlewareFailureInterface[][]|string[][]
+     */
+    private array $middlewareDefinitions;
     /**
      * @param array[][]|callable[][]|MiddlewareFailureInterface[][]|string[][] $middlewareDefinitions
      */
-    public function __construct(
-        private MiddlewareFactoryFailureInterface $middlewareFactory,
-        private array $middlewareDefinitions,
-    ) {
+    public function __construct(MiddlewareFactoryFailureInterface $middlewareFactory, array $middlewareDefinitions)
+    {
+        $this->middlewareFactory = $middlewareFactory;
+        $this->middlewareDefinitions = $middlewareDefinitions;
         $this->init();
     }
 
@@ -90,8 +94,9 @@ final class FailureMiddlewareDispatcher
 
     /**
      * @return Closure[]
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\FailureHandling\MiddlewareFailureInterface ...$definitions
      */
-    private function buildMiddlewares(array|callable|string|MiddlewareFailureInterface ...$definitions): array
+    private function buildMiddlewares(...$definitions): array
     {
         $middlewares = [];
         $factory = $this->middlewareFactory;

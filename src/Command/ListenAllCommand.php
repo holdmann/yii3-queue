@@ -19,9 +19,15 @@ final class ListenAllCommand extends Command
     'Meant to be used in development environment only. ' .
     'Listens all configured queues by default in case you\'re using yiisoft/config. ' .
     'Needs to be stopped manually.';
+    private QueueFactoryInterface $queueFactory;
+    private LoopInterface $loop;
+    private array $channels;
 
-    public function __construct(private QueueFactoryInterface $queueFactory, private LoopInterface $loop, private array $channels)
+    public function __construct(QueueFactoryInterface $queueFactory, LoopInterface $loop, array $channels)
     {
+        $this->queueFactory = $queueFactory;
+        $this->loop = $loop;
+        $this->channels = $channels;
         parent::__construct();
     }
 

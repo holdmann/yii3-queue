@@ -16,12 +16,14 @@ final class SynchronousAdapter implements AdapterInterface
 {
     private array $messages = [];
     private int $current = 0;
-
-    public function __construct(
-        private WorkerInterface $worker,
-        private QueueInterface $queue,
-        private string $channel = QueueFactory::DEFAULT_CHANNEL_NAME,
-    ) {
+    private WorkerInterface $worker;
+    private QueueInterface $queue;
+    private string $channel = QueueFactory::DEFAULT_CHANNEL_NAME;
+    public function __construct(WorkerInterface $worker, QueueInterface $queue, string $channel = QueueFactory::DEFAULT_CHANNEL_NAME)
+    {
+        $this->worker = $worker;
+        $this->queue = $queue;
+        $this->channel = $channel;
     }
 
     public function __destruct()
@@ -43,7 +45,10 @@ final class SynchronousAdapter implements AdapterInterface
         }
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         $id = (int) $id;
 

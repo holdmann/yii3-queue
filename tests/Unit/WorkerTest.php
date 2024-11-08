@@ -97,7 +97,7 @@ final class WorkerTest extends TestCase
         $logger = new SimpleLogger();
         $handler = new FakeHandler();
         $container = new SimpleContainer([FakeHandler::class => $handler]);
-        $handlers = ['simple' => FakeHandler::staticExecute(...)];
+        $handlers = ['simple' => \Closure::fromCallable([FakeHandler::class, 'staticExecute'])];
 
         $queue = $this->createMock(QueueInterface::class);
         $worker = $this->createWorkerByParams($handlers, $logger, $container);
@@ -172,7 +172,7 @@ final class WorkerTest extends TestCase
         try {
             $worker->process($message, $queue);
         } catch (JobFailureException $exception) {
-            self::assertSame($exception::class, JobFailureException::class);
+            self::assertSame(get_class($exception), JobFailureException::class);
             self::assertSame($exception->getMessage(), "Processing of message #null is stopped because of an exception:\nTest exception.");
             self::assertEquals(['test-data'], $exception->getQueueMessage()->getData());
         } finally {

@@ -146,8 +146,10 @@ final class MiddlewareFactoryTest extends TestCase
         ];
     }
 
-    #[DataProvider('invalidMiddlewareDefinitionProvider')]
-    public function testInvalidMiddleware(mixed $definition): void
+    /**
+     * @param mixed $definition
+     */
+    public function testInvalidMiddleware($definition): void
     {
         $this->expectException(InvalidMiddlewareDefinitionException::class);
         $this->getMiddlewareFactory()->createConsumeMiddleware($definition);

@@ -19,11 +19,13 @@ final class ConsumeMiddlewareDispatcher
      * @var array[]|callable[]|MiddlewareConsumeInterface[]|string[]
      */
     private array $middlewareDefinitions;
-
-    public function __construct(
-        private MiddlewareFactoryConsumeInterface $middlewareFactory,
-        array|callable|string|MiddlewareConsumeInterface ...$middlewareDefinitions,
-    ) {
+    private MiddlewareFactoryConsumeInterface $middlewareFactory;
+    /**
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\Consume\MiddlewareConsumeInterface ...$middlewareDefinitions
+     */
+    public function __construct(MiddlewareFactoryConsumeInterface $middlewareFactory, ...$middlewareDefinitions)
+    {
+        $this->middlewareFactory = $middlewareFactory;
         $this->middlewareDefinitions = array_reverse($middlewareDefinitions);
     }
 

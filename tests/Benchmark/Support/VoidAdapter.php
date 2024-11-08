@@ -18,9 +18,11 @@ final class VoidAdapter implements AdapterInterface
      * @var string A serialized message
      */
     public string $message;
+    private MessageSerializerInterface $serializer;
 
-    public function __construct(private MessageSerializerInterface $serializer)
+    public function __construct(MessageSerializerInterface $serializer)
     {
+        $this->serializer = $serializer;
     }
 
     public function runExisting(callable $handlerCallback): void
@@ -28,7 +30,10 @@ final class VoidAdapter implements AdapterInterface
         $handlerCallback($this->serializer->unserialize($this->message));
     }
 
-    public function status(int|string $id): JobStatus
+    /**
+     * @param int|string $id
+     */
+    public function status($id): JobStatus
     {
         throw new InvalidArgumentException();
     }

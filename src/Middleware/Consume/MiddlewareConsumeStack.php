@@ -15,16 +15,23 @@ final class MiddlewareConsumeStack implements MessageHandlerConsumeInterface
      * @var MessageHandlerConsumeInterface|null stack of middleware
      */
     private ?MessageHandlerConsumeInterface $stack = null;
-
+    /**
+     * @var Closure[]
+     */
+    private array $middlewares;
+    /**
+     * @var MessageHandlerConsumeInterface
+     */
+    private MessageHandlerConsumeInterface $finishHandler;
     /**
      * @param Closure[] $middlewares Middlewares.
      * @param MessageHandlerConsumeInterface $finishHandler Fallback handler
      * events.
      */
-    public function __construct(
-        private array $middlewares,
-        private MessageHandlerConsumeInterface $finishHandler,
-    ) {
+    public function __construct(array $middlewares, MessageHandlerConsumeInterface $finishHandler)
+    {
+        $this->middlewares = $middlewares;
+        $this->finishHandler = $finishHandler;
     }
 
     public function handleConsume(ConsumeRequest $request): ConsumeRequest
@@ -55,11 +62,12 @@ final class MiddlewareConsumeStack implements MessageHandlerConsumeInterface
     {
         return new class ($middlewareFactory, $handler) implements MessageHandlerConsumeInterface {
             private ?MiddlewareConsumeInterface $middleware = null;
-
-            public function __construct(
-                private Closure $middlewareFactory,
-                private MessageHandlerConsumeInterface $handler,
-            ) {
+            private Closure $middlewareFactory;
+            private MessageHandlerConsumeInterface $handler;
+            public function __construct(Closure $middlewareFactory, MessageHandlerConsumeInterface $handler)
+            {
+                $this->middlewareFactory = $middlewareFactory;
+                $this->handler = $handler;
             }
 
             public function handleConsume(ConsumeRequest $request): ConsumeRequest

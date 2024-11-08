@@ -38,23 +38,31 @@ final class QueueCollector implements SummaryCollectorInterface
             return;
         }
 
-        $statusText = match (true) {
-            $status->isDone() => 'done',
-            $status->isReserved() => 'reserved',
-            $status->isWaiting() => 'waiting',
-            default => 'unknown'
-        };
+        switch (true) {
+            case $status->isDone():
+                $statusText = 'done';
+                break;
+            case $status->isReserved():
+                $statusText = 'reserved';
+                break;
+            case $status->isWaiting():
+                $statusText = 'waiting';
+                break;
+            default:
+                $statusText = 'unknown';
+                break;
+        }
         $this->statuses[] = [
             'id' => $id,
             'status' => $statusText,
         ];
     }
 
-    public function collectPush(
-        string $channel,
-        MessageInterface $message,
-        string|array|callable|MiddlewarePushInterface ...$middlewareDefinitions,
-    ): void {
+    /**
+     * @param string|mixed[]|callable|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
+    public function collectPush(string $channel, MessageInterface $message, ...$middlewareDefinitions): void
+    {
         if (!$this->isActive()) {
             return;
         }

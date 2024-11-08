@@ -18,5 +18,5 @@ interface MiddlewareFactoryConsumeInterface
      *
      * @return MiddlewareConsumeInterface
      */
-    public function createConsumeMiddleware(callable|array|string|MiddlewareConsumeInterface $middlewareDefinition): MiddlewareConsumeInterface;
+    public function createConsumeMiddleware($middlewareDefinition): MiddlewareConsumeInterface;
 }

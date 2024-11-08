@@ -10,12 +10,13 @@ use Yiisoft\Queue\Worker\WorkerInterface;
 
 final class QueueWorkerInterfaceProxy implements WorkerInterface
 {
-    public function __construct(
-        private WorkerInterface $worker,
-        private QueueCollector $collector,
-    ) {
+    private WorkerInterface $worker;
+    private QueueCollector $collector;
+    public function __construct(WorkerInterface $worker, QueueCollector $collector)
+    {
+        $this->worker = $worker;
+        $this->collector = $collector;
     }
-
     public function process(MessageInterface $message, QueueInterface $queue): MessageInterface
     {
         $this->collector->collectWorkerProcessing($message, $queue);
