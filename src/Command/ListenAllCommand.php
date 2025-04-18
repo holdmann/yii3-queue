@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,6 +14,11 @@ use Yiisoft\Queue\Provider\QueueProviderInterface;
 
 final class ListenAllCommand extends Command
 {
+    protected static $defaultName = 'queue:listen-all';
+    protected static $defaultDescription = 'Listens the all the given queues and executes messages as they come. ' .
+    'Meant to be used in development environment only. ' .
+    'Listens all configured queues by default in case you\'re using yiisoft/config. ' .
+    'Needs to be stopped manually.';
     /**
      * @readonly
      */

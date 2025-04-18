@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,6 +13,9 @@ use Yiisoft\Queue\Provider\QueueProviderInterface;
 
 final class RunCommand extends Command
 {
+    protected static $defaultName = 'queue:run';
+    protected static $defaultDescription = 'Runs all the existing messages in the given queues. ' .
+    'Exits once messages are over.';
     /**
      * @readonly
      */

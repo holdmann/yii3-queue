@@ -70,9 +70,14 @@ final class MiddlewareFactoryFailure implements MiddlewareFactoryFailureInterfac
             return $this->getFromContainer($middlewareDefinition);
         }
 
-        return $this->tryGetFromCallable($middlewareDefinition)
-            ?? $this->tryGetFromArrayDefinition($middlewareDefinition)
-            ?? throw new InvalidMiddlewareDefinitionException($middlewareDefinition);
+        $result = $this->tryGetFromCallable($middlewareDefinition)
+            ?? $this->tryGetFromArrayDefinition($middlewareDefinition);
+
+        if (null === $result) {
+            throw new InvalidMiddlewareDefinitionException($middlewareDefinition);
+        }
+
+        return $result;
     }
 
     private function getFromContainer(string $middlewareDefinition): MiddlewareFailureInterface

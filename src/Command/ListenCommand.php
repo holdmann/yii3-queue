@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,6 +13,8 @@ use Yiisoft\Queue\QueueInterface;
 
 final class ListenCommand extends Command
 {
+    protected static $defaultName = 'queue:listen';
+    protected static $defaultDescription = 'Listens the queue and executes messages as they come. Needs to be stopped manually.';
     /**
      * @readonly
      */
