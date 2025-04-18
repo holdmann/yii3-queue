@@ -10,14 +10,16 @@ use Yiisoft\Queue\Message\MessageInterface;
 
 final class FailureEnvelope implements EnvelopeInterface
 {
+    private MessageInterface $message;
+    private array $meta = [];
     use EnvelopeTrait;
 
     public const FAILURE_META_KEY = 'failure-meta';
 
-    public function __construct(
-        private MessageInterface $message,
-        private array $meta = [],
-    ) {
+    public function __construct(MessageInterface $message, array $meta = [])
+    {
+        $this->message = $message;
+        $this->meta = $meta;
     }
 
     public static function fromMessage(MessageInterface $message): self

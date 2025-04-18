@@ -6,19 +6,31 @@ namespace Yiisoft\Queue\Message;
 
 final class Message implements MessageInterface
 {
+    private string $handlerName;
+    /**
+     * @var mixed
+     */
+    private $data;
+    /**
+     * @var array
+     */
+    private array $metadata = [];
     /**
      * @param mixed $data Message data, encodable by a queue adapter
      * @param array $metadata Message metadata, encodable by a queue adapter
      * @param string|null $id Message id
      */
-    public function __construct(
-        private string $handlerName,
-        private mixed $data,
-        private array $metadata = [],
-    ) {
+    public function __construct(string $handlerName, $data, array $metadata = [])
+    {
+        $this->handlerName = $handlerName;
+        $this->data = $data;
+        $this->metadata = $metadata;
     }
 
-    public static function fromData(string $handlerName, mixed $data, array $metadata = []): MessageInterface
+    /**
+     * @param mixed $data
+     */
+    public static function fromData(string $handlerName, $data, array $metadata = []): MessageInterface
     {
         return new self($handlerName, $data, $metadata);
     }
@@ -28,7 +40,10 @@ final class Message implements MessageInterface
         return $this->handlerName;
     }
 
-    public function getData(): mixed
+    /**
+     * @return mixed
+     */
+    public function getData()
     {
         return $this->data;
     }

@@ -27,7 +27,10 @@ final class FakeAdapter implements AdapterInterface
         //skip
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         //skip
     }
@@ -37,7 +40,10 @@ final class FakeAdapter implements AdapterInterface
         //skip
     }
 
-    public function withChannel(string|BackedEnum $channel): AdapterInterface
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function withChannel($channel): AdapterInterface
     {
         $instance = clone $this;
         $instance->pushMessages = [];

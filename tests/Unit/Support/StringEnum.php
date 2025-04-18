@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Tests\Unit\Support;
 
-enum StringEnum: string
+class StringEnum
 {
-    case RED = 'red';
-    case GREEN = 'green';
+    public const RED = 'red';
+    public const GREEN = 'green';
 }

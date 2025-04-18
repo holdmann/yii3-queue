@@ -15,15 +15,22 @@ use Yiisoft\Queue\Message\IdEnvelope;
 
 final class SynchronousAdapter implements AdapterInterface
 {
+    private WorkerInterface $worker;
+    private QueueInterface $queue;
     private array $messages = [];
     private int $current = 0;
     private string $channel;
 
+    /**
+     * @param string|\BackedEnum $channel
+     */
     public function __construct(
-        private WorkerInterface $worker,
-        private QueueInterface $queue,
-        string|BackedEnum $channel = QueueInterface::DEFAULT_CHANNEL,
+        WorkerInterface $worker,
+        QueueInterface $queue,
+        $channel = QueueInterface::DEFAULT_CHANNEL
     ) {
+        $this->worker = $worker;
+        $this->queue = $queue;
         $this->channel = ChannelNormalizer::normalize($channel);
     }
 
@@ -46,7 +53,10 @@ final class SynchronousAdapter implements AdapterInterface
         }
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         $id = (int) $id;
 
@@ -78,7 +88,10 @@ final class SynchronousAdapter implements AdapterInterface
         $this->runExisting($handlerCallback);
     }
 
-    public function withChannel(string|BackedEnum $channel): self
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function withChannel($channel): self
     {
         $channel = ChannelNormalizer::normalize($channel);
 

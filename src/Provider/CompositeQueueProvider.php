@@ -14,8 +14,9 @@ final class CompositeQueueProvider implements QueueProviderInterface
 {
     /**
      * @var QueueProviderInterface[]
+     * @readonly
      */
-    private readonly array $providers;
+    private array $providers;
 
     /**
      * @param QueueProviderInterface ...$providers Queue providers to use.
@@ -26,7 +27,10 @@ final class CompositeQueueProvider implements QueueProviderInterface
         $this->providers = $providers;
     }
 
-    public function get(string|BackedEnum $channel): QueueInterface
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function get($channel): QueueInterface
     {
         foreach ($this->providers as $provider) {
             if ($provider->has($channel)) {
@@ -36,7 +40,10 @@ final class CompositeQueueProvider implements QueueProviderInterface
         throw new ChannelNotFoundException($channel);
     }
 
-    public function has(string|BackedEnum $channel): bool
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function has($channel): bool
     {
         foreach ($this->providers as $provider) {
             if ($provider->has($channel)) {

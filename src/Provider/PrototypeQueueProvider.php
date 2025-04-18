@@ -15,20 +15,35 @@ use Yiisoft\Queue\QueueInterface;
 final class PrototypeQueueProvider implements QueueProviderInterface
 {
     /**
+     * @var QueueInterface
+     * @readonly
+     */
+    private QueueInterface $baseQueue;
+    /**
+     * @readonly
+     */
+    private AdapterInterface $baseAdapter;
+    /**
      * @param QueueInterface $baseQueue Base queue to use for creating queues.
      */
-    public function __construct(
-        private readonly QueueInterface $baseQueue,
-        private readonly AdapterInterface $baseAdapter,
-    ) {
+    public function __construct(QueueInterface $baseQueue, AdapterInterface $baseAdapter)
+    {
+        $this->baseQueue = $baseQueue;
+        $this->baseAdapter = $baseAdapter;
     }
 
-    public function get(string|BackedEnum $channel): QueueInterface
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function get($channel): QueueInterface
     {
         return $this->baseQueue->withAdapter($this->baseAdapter->withChannel($channel));
     }
 
-    public function has(string|BackedEnum $channel): bool
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function has($channel): bool
     {
         return true;
     }

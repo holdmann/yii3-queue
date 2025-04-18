@@ -8,7 +8,10 @@ use Yiisoft\Queue\Message\MessageInterface;
 
 final class TestMessage implements MessageInterface
 {
-    public static function fromData(string $handlerName, mixed $data, array $metadata = []): MessageInterface
+    /**
+     * @param mixed $data
+     */
+    public static function fromData(string $handlerName, $data, array $metadata = []): MessageInterface
     {
         return new self();
     }
@@ -18,7 +21,10 @@ final class TestMessage implements MessageInterface
         return 'test';
     }
 
-    public function getData(): mixed
+    /**
+     * @return mixed
+     */
+    public function getData()
     {
         return null;
     }

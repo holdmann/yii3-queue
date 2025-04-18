@@ -17,11 +17,12 @@ final class ChannelNotFoundExceptionTest extends TestCase
         yield 'string-enum' => ['red', StringEnum::RED];
     }
 
-    #[DataProvider('dataBase')]
-    public function testBase(string $expectedChannel, mixed $channel): void
+    /**
+     * @param mixed $channel
+     */
+    public function testBase(string $expectedChannel, $channel): void
     {
         $exception = new ChannelNotFoundException($channel);
-
         $this->assertSame(
             'Channel "' . $expectedChannel . '" not found.',
             $exception->getMessage(),

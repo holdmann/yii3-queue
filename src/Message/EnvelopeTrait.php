@@ -13,7 +13,10 @@ trait EnvelopeTrait
      */
     abstract public static function fromMessage(MessageInterface $message): self;
 
-    public static function fromData(string $handlerName, mixed $data, array $metadata = []): MessageInterface
+    /**
+     * @param mixed $data
+     */
+    public static function fromData(string $handlerName, $data, array $metadata = []): MessageInterface
     {
         return static::fromMessage(Message::fromData($handlerName, $data, $metadata));
     }
@@ -36,7 +39,10 @@ trait EnvelopeTrait
         return $this->message->getHandlerName();
     }
 
-    public function getData(): mixed
+    /**
+     * @return mixed
+     */
+    public function getData()
     {
         return $this->message->getData();
     }

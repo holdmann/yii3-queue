@@ -24,11 +24,19 @@ use function sprintf;
 final class AdapterFactoryQueueProvider implements QueueProviderInterface
 {
     /**
+     * @var QueueInterface
+     * @readonly
+     */
+    private QueueInterface $baseQueue;
+    /**
      * @psalm-var array<string, QueueInterface|null>
      */
     private array $queues = [];
 
-    private readonly StrictFactory $factory;
+    /**
+     * @readonly
+     */
+    private StrictFactory $factory;
 
     /**
      * @param QueueInterface $baseQueue Base queue for queues creation.
@@ -40,19 +48,23 @@ final class AdapterFactoryQueueProvider implements QueueProviderInterface
      * @throws InvalidQueueConfigException
      */
     public function __construct(
-        private readonly QueueInterface $baseQueue,
+        QueueInterface $baseQueue,
         array $definitions,
         ?ContainerInterface $container = null,
-        bool $validate = true,
+        bool $validate = true
     ) {
+        $this->baseQueue = $baseQueue;
         try {
             $this->factory = new StrictFactory($definitions, $container, $validate);
         } catch (InvalidConfigException $exception) {
-            throw new InvalidQueueConfigException($exception->getMessage(), previous: $exception);
+            throw new InvalidQueueConfigException($exception->getMessage(), 0, $exception);
         }
     }
 
-    public function get(string|BackedEnum $channel): QueueInterface
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function get($channel): QueueInterface
     {
         $channel = ChannelNormalizer::normalize($channel);
 
@@ -64,7 +76,10 @@ final class AdapterFactoryQueueProvider implements QueueProviderInterface
         return $queue;
     }
 
-    public function has(string|BackedEnum $channel): bool
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function has($channel): bool
     {
         $channel = ChannelNormalizer::normalize($channel);
         return $this->factory->has($channel);
@@ -73,7 +88,7 @@ final class AdapterFactoryQueueProvider implements QueueProviderInterface
     /**
      * @throws InvalidQueueConfigException
      */
-    private function getOrTryToCreate(string $channel): QueueInterface|null
+    private function getOrTryToCreate(string $channel): ?\Yiisoft\Queue\QueueInterface
     {
         if (array_key_exists($channel, $this->queues)) {
             return $this->queues[$channel];

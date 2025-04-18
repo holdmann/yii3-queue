@@ -13,23 +13,30 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Yiisoft\Queue\Cli\LoopInterface;
 use Yiisoft\Queue\Provider\QueueProviderInterface;
 
-#[AsCommand(
-    'queue:listen-all',
-    'Listens the all the given queues and executes messages as they come. '
-        . 'Meant to be used in development environment only. '
-        . 'Listens all configured queues by default in case you\'re using yiisoft/config. '
-        . 'Needs to be stopped manually.'
-)]
 final class ListenAllCommand extends Command
 {
+    /**
+     * @readonly
+     */
+    private QueueProviderInterface $queueProvider;
+    /**
+     * @readonly
+     */
+    private LoopInterface $loop;
+    /**
+     * @readonly
+     */
+    private array $channels;
     public function __construct(
-        private readonly QueueProviderInterface $queueProvider,
-        private readonly LoopInterface $loop,
-        private readonly array $channels,
+        QueueProviderInterface $queueProvider,
+        LoopInterface $loop,
+        array $channels
     ) {
+        $this->queueProvider = $queueProvider;
+        $this->loop = $loop;
+        $this->channels = $channels;
         parent::__construct();
     }
-
     /**
      * @codeCoverageIgnore
      */
@@ -59,7 +66,6 @@ final class ListenAllCommand extends Command
 
         $this->addUsage('[channel1 [channel2 [...]]] [--timeout=<timeout>] [--maximum=<maximum>]');
     }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $queues = [];

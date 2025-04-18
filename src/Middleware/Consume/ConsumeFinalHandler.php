@@ -11,8 +11,10 @@ use Closure;
  */
 final class ConsumeFinalHandler implements MessageHandlerConsumeInterface
 {
-    public function __construct(private Closure $handler)
+    private Closure $handler;
+    public function __construct(Closure $handler)
     {
+        $this->handler = $handler;
     }
 
     public function handleConsume(ConsumeRequest $request): ConsumeRequest

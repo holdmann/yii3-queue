@@ -12,19 +12,24 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Yiisoft\Queue\Provider\QueueProviderInterface;
 
-#[AsCommand(
-    'queue:run',
-    'Runs all the existing messages in the given queues. Exits once messages are over.'
-)]
 final class RunCommand extends Command
 {
+    /**
+     * @readonly
+     */
+    private QueueProviderInterface $queueProvider;
+    /**
+     * @readonly
+     */
+    private array $channels;
     public function __construct(
-        private readonly QueueProviderInterface $queueProvider,
-        private readonly array $channels,
+        QueueProviderInterface $queueProvider,
+        array $channels
     ) {
+        $this->queueProvider = $queueProvider;
+        $this->channels = $channels;
         parent::__construct();
     }
-
     public function configure(): void
     {
         $this->addArgument(
@@ -42,7 +47,6 @@ final class RunCommand extends Command
             )
             ->addUsage('[channel1 [channel2 [...]]] --maximum 100');
     }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         /** @var string $channel */

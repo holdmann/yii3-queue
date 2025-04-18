@@ -16,11 +16,9 @@ final class StubLoopTest extends TestCase
         yield 'false' => [false];
     }
 
-    #[DataProvider('dataBase')]
     public function testBase(bool $canContinue): void
     {
         $loop = new StubLoop($canContinue);
-
         $this->assertSame($canContinue, $loop->canContinue());
     }
 }

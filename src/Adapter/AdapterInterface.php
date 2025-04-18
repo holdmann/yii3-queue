@@ -25,7 +25,7 @@ interface AdapterInterface
      *
      * @throws InvalidArgumentException When there is no such id in the adapter.
      */
-    public function status(string|int $id): JobStatus;
+    public function status($id): JobStatus;
 
     /**
      * Pushing a message to the queue. Adapter sets message ID if available.
@@ -39,7 +39,10 @@ interface AdapterInterface
      */
     public function subscribe(callable $handlerCallback): void;
 
-    public function withChannel(string|BackedEnum $channel): self;
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function withChannel($channel): self;
 
     public function getChannel(): string;
 }

@@ -30,16 +30,22 @@ use Yiisoft\Queue\Message\IdEnvelope;
 
 final class Worker implements WorkerInterface
 {
+    private array $handlers;
+    private LoggerInterface $logger;
+    private Injector $injector;
+    private ContainerInterface $container;
+    private ConsumeMiddlewareDispatcher $consumeMiddlewareDispatcher;
+    private FailureMiddlewareDispatcher $failureMiddlewareDispatcher;
     private array $handlersCached = [];
 
-    public function __construct(
-        private array $handlers,
-        private LoggerInterface $logger,
-        private Injector $injector,
-        private ContainerInterface $container,
-        private ConsumeMiddlewareDispatcher $consumeMiddlewareDispatcher,
-        private FailureMiddlewareDispatcher $failureMiddlewareDispatcher,
-    ) {
+    public function __construct(array $handlers, LoggerInterface $logger, Injector $injector, ContainerInterface $container, ConsumeMiddlewareDispatcher $consumeMiddlewareDispatcher, FailureMiddlewareDispatcher $failureMiddlewareDispatcher)
+    {
+        $this->handlers = $handlers;
+        $this->logger = $logger;
+        $this->injector = $injector;
+        $this->container = $container;
+        $this->consumeMiddlewareDispatcher = $consumeMiddlewareDispatcher;
+        $this->failureMiddlewareDispatcher = $failureMiddlewareDispatcher;
     }
 
     /**
@@ -56,7 +62,7 @@ final class Worker implements WorkerInterface
         }
 
         $request = new ConsumeRequest($message, $queue);
-        $closure = fn (MessageInterface $message): mixed => $this->injector->invoke($handler, [$message]);
+        $closure = fn (MessageInterface $message) => $this->injector->invoke($handler, [$message]);
         try {
             return $this->consumeMiddlewareDispatcher->dispatch($request, $this->createConsumeHandler($closure))->getMessage();
         } catch (Throwable $exception) {
@@ -82,7 +88,7 @@ final class Worker implements WorkerInterface
             if ($definition === null && $this->container->has($name)) {
                 $handler = $this->container->get($name);
                 if ($handler instanceof MessageHandlerInterface) {
-                    $this->handlersCached[$name] = $handler->handle(...);
+                    $this->handlersCached[$name] = \Closure::fromCallable([$handler, 'handle']);
 
                     return $this->handlersCached[$name];
                 }
@@ -104,7 +110,7 @@ final class Worker implements WorkerInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    private function prepare(callable|object|array|string|null $definition): callable|null
+    private function prepare($definition): ?callable
     {
         if (is_string($definition) && $this->container->has($definition)) {
             return $this->container->get($definition);

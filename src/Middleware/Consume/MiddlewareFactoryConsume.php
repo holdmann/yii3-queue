@@ -22,12 +22,17 @@ use function is_string;
 final class MiddlewareFactoryConsume implements MiddlewareFactoryConsumeInterface
 {
     /**
+     * @var ContainerInterface
+     */
+    private ContainerInterface $container;
+    private CallableFactory $callableFactory;
+    /**
      * @param ContainerInterface $container Container to use for resolving definitions.
      */
-    public function __construct(
-        private ContainerInterface $container,
-        private CallableFactory $callableFactory,
-    ) {
+    public function __construct(ContainerInterface $container, CallableFactory $callableFactory)
+    {
+        $this->container = $container;
+        $this->callableFactory = $callableFactory;
     }
 
     /**
@@ -52,7 +57,7 @@ final class MiddlewareFactoryConsume implements MiddlewareFactoryConsumeInterfac
      * @return MiddlewareConsumeInterface
      */
     public function createConsumeMiddleware(
-        MiddlewareConsumeInterface|callable|array|string $middlewareDefinition
+        $middlewareDefinition
     ): MiddlewareConsumeInterface {
         if ($middlewareDefinition instanceof MiddlewareConsumeInterface) {
             return $middlewareDefinition;
@@ -87,10 +92,12 @@ final class MiddlewareFactoryConsume implements MiddlewareFactoryConsumeInterfac
     private function wrapCallable(callable $callback): MiddlewareConsumeInterface
     {
         return new class ($callback, $this->container) implements MiddlewareConsumeInterface {
+            private ContainerInterface $container;
             private $callback;
 
-            public function __construct(callable $callback, private ContainerInterface $container)
+            public function __construct(callable $callback, ContainerInterface $container)
             {
+                $this->container = $container;
                 $this->callback = $callback;
             }
 
@@ -110,8 +117,11 @@ final class MiddlewareFactoryConsume implements MiddlewareFactoryConsumeInterfac
         };
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Middleware\Consume\MiddlewareConsumeInterface|mixed[]|string $definition
+     */
     private function tryGetFromCallable(
-        callable|MiddlewareConsumeInterface|array|string $definition
+        $definition
     ): ?MiddlewareConsumeInterface {
         if ($definition instanceof Closure) {
             return $this->wrapCallable($definition);
@@ -124,15 +134,18 @@ final class MiddlewareFactoryConsume implements MiddlewareFactoryConsumeInterfac
             try {
                 return $this->wrapCallable($this->callableFactory->create($definition));
             } catch (InvalidCallableConfigurationException $exception) {
-                throw new InvalidMiddlewareDefinitionException($definition, previous: $exception);
+                throw new InvalidMiddlewareDefinitionException($definition, 0, $exception);
             }
         } else {
             return null;
         }
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Middleware\Consume\MiddlewareConsumeInterface|mixed[]|string $definition
+     */
     private function tryGetFromArrayDefinition(
-        callable|MiddlewareConsumeInterface|array|string $definition
+        $definition
     ): ?MiddlewareConsumeInterface {
         if (!is_array($definition)) {
             return null;
@@ -147,7 +160,7 @@ final class MiddlewareFactoryConsume implements MiddlewareFactoryConsumeInterfac
             }
 
             throw new InvalidMiddlewareDefinitionException($definition);
-        } catch (InvalidConfigException) {
+        } catch (InvalidConfigException $exception) {
         }
 
         throw new InvalidMiddlewareDefinitionException($definition);

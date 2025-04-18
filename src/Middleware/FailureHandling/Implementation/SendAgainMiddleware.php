@@ -17,6 +17,18 @@ use Yiisoft\Queue\QueueInterface;
  */
 final class SendAgainMiddleware implements MiddlewareFailureInterface
 {
+    /**
+     * @var string
+     */
+    private string $id;
+    /**
+     * @var int
+     */
+    private int $maxAttempts;
+    /**
+     * @var QueueInterface|null
+     */
+    private ?QueueInterface $targetQueue = null;
     public const META_KEY_RESEND = 'failure-strategy-resend-attempts';
 
     /**
@@ -26,10 +38,13 @@ final class SendAgainMiddleware implements MiddlewareFailureInterface
      *        They will be resent to an original queue otherwise.
      */
     public function __construct(
-        private string $id,
-        private int $maxAttempts,
-        private ?QueueInterface $targetQueue = null,
+        string $id,
+        int $maxAttempts,
+        ?QueueInterface $targetQueue = null
     ) {
+        $this->id = $id;
+        $this->maxAttempts = $maxAttempts;
+        $this->targetQueue = $targetQueue;
         if ($maxAttempts < 1) {
             throw new InvalidArgumentException("maxAttempts parameter must be a positive integer, $this->maxAttempts given.");
         }

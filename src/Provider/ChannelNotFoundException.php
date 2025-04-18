@@ -16,7 +16,10 @@ use function sprintf;
  */
 final class ChannelNotFoundException extends LogicException implements QueueProviderException
 {
-    public function __construct(string|BackedEnum $channel, int $code = 0, ?Throwable $previous = null)
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function __construct($channel, int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct(
             sprintf('Channel "%s" not found.', ChannelNormalizer::normalize($channel)),

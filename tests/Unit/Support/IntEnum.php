@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Tests\Unit\Support;
 
-enum IntEnum: int
+class IntEnum
 {
-    case ONE = 1;
-    case TWO = 2;
+    public const ONE = 1;
+    public const TWO = 2;
 }

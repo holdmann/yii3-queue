@@ -12,18 +12,18 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Yiisoft\Queue\Provider\QueueProviderInterface;
 use Yiisoft\Queue\QueueInterface;
 
-#[AsCommand(
-    'queue:listen',
-    'Listens the queue and executes messages as they come. Needs to be stopped manually.'
-)]
 final class ListenCommand extends Command
 {
+    /**
+     * @readonly
+     */
+    private QueueProviderInterface $queueProvider;
     public function __construct(
-        private readonly QueueProviderInterface $queueProvider
+        QueueProviderInterface $queueProvider
     ) {
+        $this->queueProvider = $queueProvider;
         parent::__construct();
     }
-
     public function configure(): void
     {
         $this->addArgument(
@@ -33,7 +33,6 @@ final class ListenCommand extends Command
             QueueInterface::DEFAULT_CHANNEL,
         );
     }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->queueProvider

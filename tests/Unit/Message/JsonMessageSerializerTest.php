@@ -21,13 +21,12 @@ final class JsonMessageSerializerTest extends TestCase
 {
     /**
      * @dataProvider dataUnsupportedHandlerNameFormat
+     * @param mixed $name
      */
-    #[DataProvider('dataUnsupportedHandlerNameFormat')]
-    public function testHandlerNameFormat(mixed $name): void
+    public function testHandlerNameFormat($name): void
     {
         $payload = ['name' => $name, 'data' => 'test'];
         $serializer = $this->createSerializer();
-
         $this->expectExceptionMessage(sprintf('Handler name must be a string. Got %s.', get_debug_type($name)));
         $this->expectException(InvalidArgumentException::class);
         $serializer->unserialize(json_encode($payload));
@@ -70,8 +69,9 @@ final class JsonMessageSerializerTest extends TestCase
 
     /**
      * @dataProvider dataUnsupportedPayloadFormat
+     * @param mixed $payload
      */
-    public function testPayloadFormat(mixed $payload): void
+    public function testPayloadFormat($payload): void
     {
         $serializer = $this->createSerializer();
 
@@ -90,8 +90,9 @@ final class JsonMessageSerializerTest extends TestCase
 
     /**
      * @dataProvider dataUnsupportedMetadataFormat
+     * @param mixed $meta
      */
-    public function testMetadataFormat(mixed $meta): void
+    public function testMetadataFormat($meta): void
     {
         $payload = ['name' => 'handler', 'data' => 'test', 'meta' => $meta];
         $serializer = $this->createSerializer();

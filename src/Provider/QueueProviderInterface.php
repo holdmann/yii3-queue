@@ -22,7 +22,7 @@ interface QueueProviderInterface
      * @throws QueueProviderException If the queue provider fails to provide a queue.
      * @return QueueInterface Queue instance.
      */
-    public function get(string|BackedEnum $channel): QueueInterface;
+    public function get($channel): QueueInterface;
 
     /**
      * Check if a queue with the specified channel name exists.
@@ -31,5 +31,5 @@ interface QueueProviderInterface
      *
      * @return bool Whether the queue exists.
      */
-    public function has(string|BackedEnum $channel): bool;
+    public function has($channel): bool;
 }

@@ -8,6 +8,7 @@ use Closure;
 
 final class ConsumeMiddlewareDispatcher
 {
+    private MiddlewareFactoryConsumeInterface $middlewareFactory;
     /**
      * Contains a middleware pipeline handlers.
      *
@@ -20,10 +21,14 @@ final class ConsumeMiddlewareDispatcher
      */
     private array $middlewareDefinitions;
 
+    /**
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\Consume\MiddlewareConsumeInterface ...$middlewareDefinitions
+     */
     public function __construct(
-        private MiddlewareFactoryConsumeInterface $middlewareFactory,
-        array|callable|string|MiddlewareConsumeInterface ...$middlewareDefinitions,
+        MiddlewareFactoryConsumeInterface $middlewareFactory,
+        ...$middlewareDefinitions
     ) {
+        $this->middlewareFactory = $middlewareFactory;
         $this->middlewareDefinitions = array_reverse($middlewareDefinitions);
     }
 

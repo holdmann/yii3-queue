@@ -31,7 +31,10 @@ final class FakeHandler
         self::$processedMessages[] = $message;
     }
 
-    public function executeWithException(MessageInterface $message): never
+    /**
+     * @return never
+     */
+    public function executeWithException(MessageInterface $message)
     {
         throw new RuntimeException('Test exception');
     }

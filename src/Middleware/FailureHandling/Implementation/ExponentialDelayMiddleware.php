@@ -19,6 +19,31 @@ use Yiisoft\Queue\Middleware\FailureHandling\FailureEnvelope;
  */
 final class ExponentialDelayMiddleware implements MiddlewareFailureInterface
 {
+    /**
+     * @var string
+     */
+    private string $id;
+    /**
+     * @var int
+     */
+    private int $maxAttempts;
+    /**
+     * @var float
+     */
+    private float $delayInitial;
+    /**
+     * @var float
+     */
+    private float $delayMaximum;
+    /**
+     * @var float
+     */
+    private float $exponent;
+    private DelayMiddlewareInterface $delayMiddleware;
+    /**
+     * @var QueueInterface|null
+     */
+    private ?QueueInterface $queue = null;
     public const META_KEY_ATTEMPTS = 'failure-strategy-exponential-delay-attempts';
     public const META_KEY_DELAY = 'failure-strategy-exponential-delay-delay';
 
@@ -31,14 +56,21 @@ final class ExponentialDelayMiddleware implements MiddlewareFailureInterface
      * @param QueueInterface|null $queue
      */
     public function __construct(
-        private string $id,
-        private int $maxAttempts,
-        private float $delayInitial,
-        private float $delayMaximum,
-        private float $exponent,
-        private DelayMiddlewareInterface $delayMiddleware,
-        private ?QueueInterface $queue = null,
+        string $id,
+        int $maxAttempts,
+        float $delayInitial,
+        float $delayMaximum,
+        float $exponent,
+        DelayMiddlewareInterface $delayMiddleware,
+        ?QueueInterface $queue = null
     ) {
+        $this->id = $id;
+        $this->maxAttempts = $maxAttempts;
+        $this->delayInitial = $delayInitial;
+        $this->delayMaximum = $delayMaximum;
+        $this->exponent = $exponent;
+        $this->delayMiddleware = $delayMiddleware;
+        $this->queue = $queue;
         if ($maxAttempts <= 0) {
             throw new InvalidArgumentException("maxAttempts parameter must be a positive integer, $this->maxAttempts given.");
         }

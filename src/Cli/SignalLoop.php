@@ -6,6 +6,10 @@ namespace Yiisoft\Queue\Cli;
 
 class SignalLoop implements LoopInterface
 {
+    /**
+     * @var int
+     */
+    protected int $memorySoftLimit = 0;
     use SoftLimitTrait;
 
     /**
@@ -30,8 +34,9 @@ class SignalLoop implements LoopInterface
      * @param int $memorySoftLimit Soft RAM limit in bytes. The loop won't let you continue to execute the program if
      *     soft limit is reached. Zero means no limit.
      */
-    public function __construct(protected int $memorySoftLimit = 0)
+    public function __construct(int $memorySoftLimit = 0)
     {
+        $this->memorySoftLimit = $memorySoftLimit;
         foreach (self::SIGNALS_EXIT as $signal) {
             pcntl_signal($signal, fn () => $this->exit = true);
         }

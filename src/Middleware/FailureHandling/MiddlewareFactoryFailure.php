@@ -24,12 +24,17 @@ use function is_string;
 final class MiddlewareFactoryFailure implements MiddlewareFactoryFailureInterface
 {
     /**
+     * @var ContainerInterface
+     */
+    private ContainerInterface $container;
+    private CallableFactory $callableFactory;
+    /**
      * @param ContainerInterface $container Container to use for resolving definitions.
      */
-    public function __construct(
-        private ContainerInterface $container,
-        private CallableFactory $callableFactory,
-    ) {
+    public function __construct(ContainerInterface $container, CallableFactory $callableFactory)
+    {
+        $this->container = $container;
+        $this->callableFactory = $callableFactory;
     }
 
     /**
@@ -55,7 +60,7 @@ final class MiddlewareFactoryFailure implements MiddlewareFactoryFailureInterfac
      * @return MiddlewareFailureInterface
      */
     public function createFailureMiddleware(
-        MiddlewareFailureInterface|callable|array|string $middlewareDefinition
+        $middlewareDefinition
     ): MiddlewareFailureInterface {
         if ($middlewareDefinition instanceof MiddlewareFailureInterface) {
             return $middlewareDefinition;
@@ -90,10 +95,12 @@ final class MiddlewareFactoryFailure implements MiddlewareFactoryFailureInterfac
     private function wrapCallable(callable $callback): MiddlewareFailureInterface
     {
         return new class ($callback, $this->container) implements MiddlewareFailureInterface {
+            private ContainerInterface $container;
             private $callback;
 
-            public function __construct(callable $callback, private ContainerInterface $container)
+            public function __construct(callable $callback, ContainerInterface $container)
             {
+                $this->container = $container;
                 $this->callback = $callback;
             }
 
@@ -113,8 +120,11 @@ final class MiddlewareFactoryFailure implements MiddlewareFactoryFailureInterfac
         };
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Middleware\FailureHandling\MiddlewareFailureInterface|mixed[]|string $definition
+     */
     private function tryGetFromCallable(
-        callable|MiddlewareFailureInterface|array|string $definition
+        $definition
     ): ?MiddlewareFailureInterface {
         if ($definition instanceof Closure) {
             return $this->wrapCallable($definition);
@@ -127,15 +137,18 @@ final class MiddlewareFactoryFailure implements MiddlewareFactoryFailureInterfac
             try {
                 return $this->wrapCallable($this->callableFactory->create($definition));
             } catch (InvalidCallableConfigurationException $exception) {
-                throw new InvalidMiddlewareDefinitionException($definition, previous: $exception);
+                throw new InvalidMiddlewareDefinitionException($definition, 0, $exception);
             }
         } else {
             return null;
         }
     }
 
+    /**
+     * @param callable|\Yiisoft\Queue\Middleware\FailureHandling\MiddlewareFailureInterface|mixed[]|string $definition
+     */
     private function tryGetFromArrayDefinition(
-        callable|MiddlewareFailureInterface|array|string $definition
+        $definition
     ): ?MiddlewareFailureInterface {
         if (!is_array($definition)) {
             return null;
@@ -150,7 +163,7 @@ final class MiddlewareFactoryFailure implements MiddlewareFactoryFailureInterfac
             }
 
             throw new InvalidMiddlewareDefinitionException($definition);
-        } catch (InvalidConfigException) {
+        } catch (InvalidConfigException $exception) {
         }
 
         throw new InvalidMiddlewareDefinitionException($definition);

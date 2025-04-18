@@ -112,7 +112,6 @@ final class MiddlewareDispatcherTest extends TestCase
         ];
     }
 
-    #[DataProvider('dataHasMiddlewares')]
     public function testHasMiddlewares(array $definitions, bool $expected): void
     {
         self::assertSame(
@@ -159,7 +158,7 @@ final class MiddlewareDispatcherTest extends TestCase
     }
 
     private function createDispatcher(
-        ?ContainerInterface $container = null,
+        ?ContainerInterface $container = null
     ): ConsumeMiddlewareDispatcher {
         $container ??= $this->createContainer([AdapterInterface::class => new FakeAdapter()]);
         $callableFactory = new CallableFactory($container);

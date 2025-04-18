@@ -10,19 +10,33 @@ use Yiisoft\Queue\QueueInterface;
 
 final class QueueProviderInterfaceProxy implements QueueProviderInterface
 {
-    public function __construct(
-        private readonly QueueProviderInterface $queueProvider,
-        private readonly QueueCollector $collector,
-    ) {
+    /**
+     * @readonly
+     */
+    private QueueProviderInterface $queueProvider;
+    /**
+     * @readonly
+     */
+    private QueueCollector $collector;
+    public function __construct(QueueProviderInterface $queueProvider, QueueCollector $collector)
+    {
+        $this->queueProvider = $queueProvider;
+        $this->collector = $collector;
     }
 
-    public function get(string|BackedEnum $channel): QueueInterface
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function get($channel): QueueInterface
     {
         $queue = $this->queueProvider->get($channel);
         return new QueueDecorator($queue, $this->collector);
     }
 
-    public function has(string|BackedEnum $channel): bool
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public function has($channel): bool
     {
         return $this->queueProvider->has($channel);
     }

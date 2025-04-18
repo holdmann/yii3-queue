@@ -28,13 +28,15 @@ final class SoftLimitTraitTest extends TestCase
     public function testMemoryLimitNotReachedWhenUsageIsLower(): void
     {
         $currentMemoryUsage = memory_get_usage(true);
-        $instance = new class ($currentMemoryUsage + 1024 * 1024) { // 1MB higher than current usage
+        $instance = new class ($currentMemoryUsage + 1024 * 1024) { private int $limit;
+            // 1MB higher than current usage
             use SoftLimitTrait {
                 memoryLimitReached as public;
             }
 
-            public function __construct(private int $limit)
+            public function __construct(int $limit)
             {
+                $this->limit = $limit;
             }
 
             protected function getMemoryLimit(): int
@@ -49,13 +51,15 @@ final class SoftLimitTraitTest extends TestCase
     public function testMemoryLimitReachedWhenUsageIsHigher(): void
     {
         $currentMemoryUsage = memory_get_usage(true);
-        $instance = new class ($currentMemoryUsage - 1024) { // 1KB lower than current usage
+        $instance = new class ($currentMemoryUsage - 1024) { private int $limit;
+            // 1KB lower than current usage
             use SoftLimitTrait {
                 memoryLimitReached as public;
             }
 
-            public function __construct(private int $limit)
+            public function __construct(int $limit)
             {
+                $this->limit = $limit;
             }
 
             protected function getMemoryLimit(): int
@@ -70,13 +74,15 @@ final class SoftLimitTraitTest extends TestCase
     public function testMemoryLimitExceededWhenUsageIncreases(): void
     {
         $currentMemoryUsage = memory_get_usage(true);
-        $instance = new class ($currentMemoryUsage + 5 * 1024 * 1024) { // Set limit 5MB higher than current usage
+        $instance = new class ($currentMemoryUsage + 5 * 1024 * 1024) { private int $limit;
+            // Set limit 5MB higher than current usage
             use SoftLimitTrait {
                 memoryLimitReached as public;
             }
 
-            public function __construct(private int $limit)
+            public function __construct(int $limit)
             {
+                $this->limit = $limit;
             }
 
             protected function getMemoryLimit(): int

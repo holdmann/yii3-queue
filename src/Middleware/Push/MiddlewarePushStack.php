@@ -9,6 +9,14 @@ use Closure;
 final class MiddlewarePushStack implements MessageHandlerPushInterface
 {
     /**
+     * @var Closure[]
+     */
+    private array $middlewares;
+    /**
+     * @var MessageHandlerPushInterface
+     */
+    private MessageHandlerPushInterface $finishHandler;
+    /**
      * Contains a stack of middleware wrapped in handlers.
      * Each handler points to the handler of middleware that will be processed next.
      *
@@ -21,10 +29,10 @@ final class MiddlewarePushStack implements MessageHandlerPushInterface
      * @param MessageHandlerPushInterface $finishHandler Fallback handler
      * events.
      */
-    public function __construct(
-        private array $middlewares,
-        private MessageHandlerPushInterface $finishHandler,
-    ) {
+    public function __construct(array $middlewares, MessageHandlerPushInterface $finishHandler)
+    {
+        $this->middlewares = $middlewares;
+        $this->finishHandler = $finishHandler;
     }
 
     public function handlePush(PushRequest $request): PushRequest
@@ -54,12 +62,14 @@ final class MiddlewarePushStack implements MessageHandlerPushInterface
     private function wrap(Closure $middlewareFactory, MessageHandlerPushInterface $handler): MessageHandlerPushInterface
     {
         return new class ($middlewareFactory, $handler) implements MessageHandlerPushInterface {
+            private Closure $middlewareFactory;
+            private MessageHandlerPushInterface $handler;
             private ?MiddlewarePushInterface $middleware = null;
 
-            public function __construct(
-                private Closure $middlewareFactory,
-                private MessageHandlerPushInterface $handler,
-            ) {
+            public function __construct(Closure $middlewareFactory, MessageHandlerPushInterface $handler)
+            {
+                $this->middlewareFactory = $middlewareFactory;
+                $this->handler = $handler;
             }
 
             public function handlePush(PushRequest $request): PushRequest

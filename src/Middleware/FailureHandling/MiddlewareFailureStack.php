@@ -9,6 +9,14 @@ use Closure;
 final class MiddlewareFailureStack implements MessageFailureHandlerInterface
 {
     /**
+     * @var Closure[]
+     */
+    private array $middlewares;
+    /**
+     * @var MessageFailureHandlerInterface
+     */
+    private MessageFailureHandlerInterface $finishHandler;
+    /**
      * Contains a stack of middleware wrapped in handlers.
      * Each handler points to the handler of middleware that will be processed next.
      *
@@ -21,10 +29,10 @@ final class MiddlewareFailureStack implements MessageFailureHandlerInterface
      * @param MessageFailureHandlerInterface $finishHandler Fallback handler
      * events.
      */
-    public function __construct(
-        private array $middlewares,
-        private MessageFailureHandlerInterface $finishHandler,
-    ) {
+    public function __construct(array $middlewares, MessageFailureHandlerInterface $finishHandler)
+    {
+        $this->middlewares = $middlewares;
+        $this->finishHandler = $finishHandler;
     }
 
     public function handleFailure(FailureHandlingRequest $request): FailureHandlingRequest
@@ -54,12 +62,14 @@ final class MiddlewareFailureStack implements MessageFailureHandlerInterface
     private function wrap(Closure $middlewareFactory, MessageFailureHandlerInterface $handler): MessageFailureHandlerInterface
     {
         return new class ($middlewareFactory, $handler) implements MessageFailureHandlerInterface {
+            private Closure $middlewareFactory;
+            private MessageFailureHandlerInterface $handler;
             private ?MiddlewareFailureInterface $middleware = null;
 
-            public function __construct(
-                private Closure $middlewareFactory,
-                private MessageFailureHandlerInterface $handler,
-            ) {
+            public function __construct(Closure $middlewareFactory, MessageFailureHandlerInterface $handler)
+            {
+                $this->middlewareFactory = $middlewareFactory;
+                $this->handler = $handler;
             }
 
             public function handleFailure(FailureHandlingRequest $request): FailureHandlingRequest

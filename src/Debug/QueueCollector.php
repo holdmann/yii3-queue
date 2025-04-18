@@ -32,7 +32,10 @@ final class QueueCollector implements SummaryCollectorInterface
         ];
     }
 
-    public function collectStatus(string $id, JobStatus $status): void
+    /**
+     * @param mixed $status
+     */
+    public function collectStatus(string $id, $status): void
     {
         if (!$this->isActive()) {
             return;
@@ -44,10 +47,13 @@ final class QueueCollector implements SummaryCollectorInterface
         ];
     }
 
+    /**
+     * @param string|mixed[]|callable|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
     public function collectPush(
         ?string $channel,
         MessageInterface $message,
-        string|array|callable|MiddlewarePushInterface ...$middlewareDefinitions,
+        ...$middlewareDefinitions
     ): void {
         if (!$this->isActive()) {
             return;

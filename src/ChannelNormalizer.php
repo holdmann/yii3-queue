@@ -11,7 +11,10 @@ use BackedEnum;
  */
 final class ChannelNormalizer
 {
-    public static function normalize(string|BackedEnum $channel): string
+    /**
+     * @param string|\BackedEnum $channel
+     */
+    public static function normalize($channel): string
     {
         return $channel instanceof BackedEnum ? (string) $channel->value : $channel;
     }

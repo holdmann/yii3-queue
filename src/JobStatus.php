@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue;
 
-enum JobStatus: int
+class JobStatus
 {
-    case WAITING = 1;
-    case RESERVED = 2;
-    case DONE = 3;
-
+    public const WAITING = 1;
+    public const RESERVED = 2;
+    public const DONE = 3;
     public function key(): string
     {
-        return match ($this) {
-            self::WAITING => 'waiting',
-            self::RESERVED => 'reserved',
-            self::DONE => 'done',
-        };
+        switch ($this) {
+            case self::WAITING:
+                return 'waiting';
+            case self::RESERVED:
+                return 'reserved';
+            case self::DONE:
+                return 'done';
+        }
     }
 }

@@ -19,20 +19,33 @@ use Yiisoft\Queue\Message\IdEnvelope;
 
 final class Queue implements QueueInterface
 {
+    private WorkerInterface $worker;
+    private LoopInterface $loop;
+    private LoggerInterface $logger;
+    private PushMiddlewareDispatcher $pushMiddlewareDispatcher;
+    private ?AdapterInterface $adapter = null;
     /**
      * @var array|array[]|callable[]|MiddlewarePushInterface[]|string[]
      */
     private array $middlewareDefinitions;
     private AdapterPushHandler $adapterPushHandler;
 
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
     public function __construct(
-        private WorkerInterface $worker,
-        private LoopInterface $loop,
-        private LoggerInterface $logger,
-        private PushMiddlewareDispatcher $pushMiddlewareDispatcher,
-        private ?AdapterInterface $adapter = null,
-        MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions
+        WorkerInterface $worker,
+        LoopInterface $loop,
+        LoggerInterface $logger,
+        PushMiddlewareDispatcher $pushMiddlewareDispatcher,
+        ?AdapterInterface $adapter = null,
+        ...$middlewareDefinitions
     ) {
+        $this->worker = $worker;
+        $this->loop = $loop;
+        $this->logger = $logger;
+        $this->pushMiddlewareDispatcher = $pushMiddlewareDispatcher;
+        $this->adapter = $adapter;
         $this->middlewareDefinitions = $middlewareDefinitions;
         $this->adapterPushHandler = new AdapterPushHandler();
     }
@@ -43,9 +56,12 @@ final class Queue implements QueueInterface
         return $this->adapter->getChannel();
     }
 
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
     public function push(
         MessageInterface $message,
-        MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions
+        ...$middlewareDefinitions
     ): MessageInterface {
         $this->checkAdapter();
         $this->logger->debug(
@@ -103,7 +119,10 @@ final class Queue implements QueueInterface
         $this->logger->info('Finish listening to the queue.');
     }
 
-    public function status(string|int $id): JobStatus
+    /**
+     * @param string|int $id
+     */
+    public function status($id): JobStatus
     {
         $this->checkAdapter();
         return $this->adapter->status($id);
@@ -117,7 +136,10 @@ final class Queue implements QueueInterface
         return $new;
     }
 
-    public function withMiddlewares(MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions): self
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
+    public function withMiddlewares(...$middlewareDefinitions): self
     {
         $instance = clone $this;
         $instance->middlewareDefinitions = $middlewareDefinitions;
@@ -125,10 +147,13 @@ final class Queue implements QueueInterface
         return $instance;
     }
 
-    public function withMiddlewaresAdded(MiddlewarePushInterface|callable|array|string ...$middlewareDefinitions): self
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewareDefinitions
+     */
+    public function withMiddlewaresAdded(...$middlewareDefinitions): self
     {
         $instance = clone $this;
-        $instance->middlewareDefinitions = [...array_values($instance->middlewareDefinitions), ...array_values($middlewareDefinitions)];
+        $instance->middlewareDefinitions = array_merge(array_values($instance->middlewareDefinitions), array_values($middlewareDefinitions));
 
         return $instance;
     }
@@ -150,21 +175,27 @@ final class Queue implements QueueInterface
         }
     }
 
-    private function createPushHandler(MiddlewarePushInterface|callable|array|string ...$middlewares): MessageHandlerPushInterface
+    /**
+     * @param \Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface|callable|mixed[]|string ...$middlewares
+     */
+    private function createPushHandler(...$middlewares): MessageHandlerPushInterface
     {
         return new class (
             $this->adapterPushHandler,
             $this->pushMiddlewareDispatcher,
             array_merge($this->middlewareDefinitions, $middlewares)
         ) implements MessageHandlerPushInterface {
-            public function __construct(
-                private AdapterPushHandler $adapterPushHandler,
-                private PushMiddlewareDispatcher $dispatcher,
+            private AdapterPushHandler $adapterPushHandler;
+            private PushMiddlewareDispatcher $dispatcher;
+            private array $middlewares;
+            public function __construct(AdapterPushHandler $adapterPushHandler, PushMiddlewareDispatcher $dispatcher, array $middlewares)
+            {
+                $this->adapterPushHandler = $adapterPushHandler;
+                $this->dispatcher = $dispatcher;
                 /**
                  * @var array|array[]|callable[]|MiddlewarePushInterface[]|string[]
                  */
-                private array $middlewares,
-            ) {
+                $this->middlewares = $middlewares;
             }
 
             public function handlePush(PushRequest $request): PushRequest

@@ -25,8 +25,8 @@ class SendAgainMiddlewareTest extends TestCase
     private const EXPONENTIAL_STRATEGY_DELAY_INITIAL = 1;
     private const EXPONENTIAL_STRATEGY_DELAY_MAXIMUM = 5;
     private const EXPONENTIAL_STRATEGY_EXPONENT = 2;
-    final public const KEY_EXPONENTIAL_ATTEMPTS = ExponentialDelayMiddleware::META_KEY_ATTEMPTS . '-test';
-    final public const KEY_EXPONENTIAL_DELAY = ExponentialDelayMiddleware::META_KEY_DELAY . '-test';
+    public const KEY_EXPONENTIAL_ATTEMPTS = ExponentialDelayMiddleware::META_KEY_ATTEMPTS . '-test';
+    public const KEY_EXPONENTIAL_DELAY = ExponentialDelayMiddleware::META_KEY_DELAY . '-test';
 
     public static function queueSendingStrategyProvider(): array
     {
@@ -140,23 +140,15 @@ class SendAgainMiddlewareTest extends TestCase
         ];
     }
 
-    #[DataProvider('queueSendingStrategyProvider')]
-    public function testQueueSendingStrategies(
-        string $strategyName,
-        bool $suites,
-        array $metaInitial,
-        array $metaResult
-    ): void {
+    public function testQueueSendingStrategies(string $strategyName, bool $suites, array $metaInitial, array $metaResult): void
+    {
         if (!$suites) {
             $this->expectExceptionMessage('testException');
         }
-
         $metaInitial = [FailureEnvelope::FAILURE_META_KEY => $metaInitial];
         $metaResult = [FailureEnvelope::FAILURE_META_KEY => $metaResult];
-
         $handler = $this->getHandler($metaResult, $suites);
         $queue = $this->getPreparedQueue($metaResult, $suites);
-
         $strategy = $this->getStrategy($strategyName, $queue);
         $request = new FailureHandlingRequest(
             new Message(
@@ -168,25 +160,27 @@ class SendAgainMiddlewareTest extends TestCase
             $queue
         );
         $result = $strategy->processFailure($request, $handler);
-
         self::assertInstanceOf(FailureHandlingRequest::class, $result);
     }
 
     private function getStrategy(string $strategyName, QueueInterface $queue): MiddlewareFailureInterface
     {
-        return match ($strategyName) {
-            SendAgainMiddleware::class => new SendAgainMiddleware('', 2, $queue),
-            ExponentialDelayMiddleware::class => new ExponentialDelayMiddleware(
-                'test',
-                2,
-                self::EXPONENTIAL_STRATEGY_DELAY_INITIAL,
-                self::EXPONENTIAL_STRATEGY_DELAY_MAXIMUM,
-                self::EXPONENTIAL_STRATEGY_EXPONENT,
-                $this->createMock(DelayMiddlewareInterface::class),
-                $queue,
-            ),
-            default => throw new RuntimeException('Unknown strategy'),
-        };
+        switch ($strategyName) {
+            case SendAgainMiddleware::class:
+                return new SendAgainMiddleware('', 2, $queue);
+            case ExponentialDelayMiddleware::class:
+                return new ExponentialDelayMiddleware(
+                    'test',
+                    2,
+                    self::EXPONENTIAL_STRATEGY_DELAY_INITIAL,
+                    self::EXPONENTIAL_STRATEGY_DELAY_MAXIMUM,
+                    self::EXPONENTIAL_STRATEGY_EXPONENT,
+                    $this->createMock(DelayMiddlewareInterface::class),
+                    $queue,
+                );
+            default:
+                throw new RuntimeException('Unknown strategy');
+        }
     }
 
     private function getHandler(array $metaResult, bool $suites): MessageFailureHandlerInterface

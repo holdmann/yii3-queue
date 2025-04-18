@@ -33,19 +33,21 @@ final class StubAdapterTest extends TestCase
         yield 'integer-enum' => ['1', IntEnum::ONE];
     }
 
-    #[DataProvider('dataChannels')]
-    public function testWithChannel(string $expected, mixed $channel): void
+    /**
+     * @param mixed $channel
+     */
+    public function testWithChannel(string $expected, $channel): void
     {
         $adapter = (new StubAdapter())->withChannel($channel);
-
         $this->assertSame($expected, $adapter->getChannel());
     }
 
-    #[DataProvider('dataChannels')]
-    public function testChannelInConstructor(string $expected, mixed $channel): void
+    /**
+     * @param mixed $channel
+     */
+    public function testChannelInConstructor(string $expected, $channel): void
     {
         $adapter = new StubAdapter($channel);
-
         $this->assertSame($expected, $adapter->getChannel());
     }
 }

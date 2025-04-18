@@ -9,6 +9,14 @@ use Closure;
 final class MiddlewareConsumeStack implements MessageHandlerConsumeInterface
 {
     /**
+     * @var Closure[]
+     */
+    private array $middlewares;
+    /**
+     * @var MessageHandlerConsumeInterface
+     */
+    private MessageHandlerConsumeInterface $finishHandler;
+    /**
      * Contains a stack of middleware wrapped in handlers.
      * Each handler points to the handler of middleware that will be processed next.
      *
@@ -21,10 +29,10 @@ final class MiddlewareConsumeStack implements MessageHandlerConsumeInterface
      * @param MessageHandlerConsumeInterface $finishHandler Fallback handler
      * events.
      */
-    public function __construct(
-        private array $middlewares,
-        private MessageHandlerConsumeInterface $finishHandler,
-    ) {
+    public function __construct(array $middlewares, MessageHandlerConsumeInterface $finishHandler)
+    {
+        $this->middlewares = $middlewares;
+        $this->finishHandler = $finishHandler;
     }
 
     public function handleConsume(ConsumeRequest $request): ConsumeRequest
@@ -54,12 +62,14 @@ final class MiddlewareConsumeStack implements MessageHandlerConsumeInterface
     private function wrap(Closure $middlewareFactory, MessageHandlerConsumeInterface $handler): MessageHandlerConsumeInterface
     {
         return new class ($middlewareFactory, $handler) implements MessageHandlerConsumeInterface {
+            private Closure $middlewareFactory;
+            private MessageHandlerConsumeInterface $handler;
             private ?MiddlewareConsumeInterface $middleware = null;
 
-            public function __construct(
-                private Closure $middlewareFactory,
-                private MessageHandlerConsumeInterface $handler,
-            ) {
+            public function __construct(Closure $middlewareFactory, MessageHandlerConsumeInterface $handler)
+            {
+                $this->middlewareFactory = $middlewareFactory;
+                $this->handler = $handler;
             }
 
             public function handleConsume(ConsumeRequest $request): ConsumeRequest

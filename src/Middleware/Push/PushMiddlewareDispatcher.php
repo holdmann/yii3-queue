@@ -8,6 +8,7 @@ use Closure;
 
 final class PushMiddlewareDispatcher
 {
+    private MiddlewareFactoryPushInterface $middlewareFactory;
     /**
      * Contains a middleware pipeline handler.
      *
@@ -19,10 +20,14 @@ final class PushMiddlewareDispatcher
      */
     private array $middlewareDefinitions;
 
+    /**
+     * @param mixed[]|callable|string|\Yiisoft\Queue\Middleware\Push\MiddlewarePushInterface ...$middlewareDefinitions
+     */
     public function __construct(
-        private MiddlewareFactoryPushInterface $middlewareFactory,
-        array|callable|string|MiddlewarePushInterface ...$middlewareDefinitions,
+        MiddlewareFactoryPushInterface $middlewareFactory,
+        ...$middlewareDefinitions
     ) {
+        $this->middlewareFactory = $middlewareFactory;
         $this->middlewareDefinitions = array_reverse($middlewareDefinitions);
     }
 

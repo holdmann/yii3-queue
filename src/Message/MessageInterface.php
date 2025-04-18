@@ -6,7 +6,10 @@ namespace Yiisoft\Queue\Message;
 
 interface MessageInterface
 {
-    public static function fromData(string $handlerName, mixed $data, array $metadata = []): self;
+    /**
+     * @param mixed $data
+     */
+    public static function fromData(string $handlerName, $data, array $metadata = []): self;
 
     /**
      * Returns handler name.
@@ -20,7 +23,7 @@ interface MessageInterface
      *
      * @return mixed
      */
-    public function getData(): mixed;
+    public function getData();
 
     /**
      * Returns message metadata: timings, attempts count, metrics, etc.
